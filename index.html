@@ -650,6 +650,131 @@ function saveRefl(cardId, name){
 }
 
 // ── MULTI COMPARISON ──
+// ── INDIVIDUALIZED NATURAL ROLES based on top 3 strengths ──
+// Each description is generated from the person's actual top 3 strengths
+
+// Strength contribution phrases — what each strength adds to a person's profile
+const STRENGTH_VERB = {
+  'Achiever':         'a drive to deliver',
+  'Activator':        'a bias toward action',
+  'Adaptability':     'a natural ease with change',
+  'Analytical':       'a need to understand the "why"',
+  'Arranger':         'a talent for organizing complexity',
+  'Belief':           'a values-driven consistency',
+  'Command':          'a directness that moves things forward',
+  'Communication':    'a gift for making ideas land',
+  'Competition':      'a drive to perform and win',
+  'Connectedness':    'a sense of shared purpose',
+  'Consistency':      'a commitment to fairness and standards',
+  'Context':          'an instinct to learn from the past',
+  'Deliberative':     'a careful, risk-aware judgment',
+  'Developer':        'an eye for what people could become',
+  'Discipline':       'a precision in how work gets done',
+  'Empathy':          'a deep read on how others feel',
+  'Focus':            'a relentless drive toward the goal',
+  'Futuristic':       'a vivid sense of what\'s possible',
+  'Harmony':          'a talent for finding common ground',
+  'Ideation':         'a mind that generates new connections',
+  'Includer':         'a reflex to bring everyone in',
+  'Individualization':'an ability to see each person distinctly',
+  'Input':            'a hunger to gather and curate knowledge',
+  'Intellection':     'a love of deep, sustained thinking',
+  'Learner':          'a constant pull toward growth',
+  'Maximizer':        'a push to take good to great',
+  'Positivity':       'an energy that lifts the people around them',
+  'Relator':          'a capacity for deep, authentic connection',
+  'Responsibility':   'a strong ownership of commitments',
+  'Restorative':      'a drive to diagnose and fix what\'s broken',
+  'Self-Assurance':   'a quiet confidence in their own judgment',
+  'Significance':     'a motivation to do work that matters',
+  'Strategic':        'a pattern-recognition that finds the best path',
+  'Woo':              'a natural ability to open any door',
+};
+
+// Combination summaries — what top-3 combos mean together
+// Pattern: look up specific combos, fall back to building from STRENGTH_VERB
+const COMBO_SUMMARY = {
+  // Lori: Ideation+Learner+Activator
+  'Ideation+Learner+Activator':     'Naturally wired to generate ideas and get them moving. The combination of creative thinking, continuous learning, and a bias toward action means they rarely let good ideas sit.',
+  'Ideation+Activator+Learner':     'Naturally wired to generate ideas and get them moving. The combination of creative thinking, a bias toward action, and continuous learning means they rarely let good ideas sit.',
+  // John: Relator+Learner+Futuristic
+  'Relator+Learner+Futuristic':     'Builds deep trust while thinking toward what\'s next. Their combination of authentic connection, curiosity, and forward vision makes them a natural guide for others navigating growth or change.',
+  // Robert: Responsibility+Analytical+Ideation
+  'Responsibility+Analytical+Ideation': 'Brings both rigor and creativity to their work. They\'re driven to own what they start, need to understand it deeply, and can generate fresh angles that others miss.',
+  // Des: Input+Strategic+Achiever
+  'Input+Strategic+Achiever':       'Collects knowledge, finds the best path, then delivers. This is a rare combination of breadth, direction, and follow-through — they\'re equally comfortable thinking and executing.',
+  // Dan: Positivity+Woo+Communication
+  'Positivity+Woo+Communication':   'A natural energizer and connector. They open relationships easily, communicate compellingly, and have a genuine warmth that makes people want to engage.',
+  // Emily: Context+Belief+Individualization
+  'Context+Belief+Individualization': 'Brings a thoughtful, values-grounded perspective and a rare ability to see each person as an individual. They draw on history to understand the present and hold themselves to a consistent standard.',
+  // Kristi: Learner+Input+Strategic
+  'Learner+Input+Strategic':        'A well-informed strategic thinker. They gather widely, absorb deeply, and then identify the clearest path forward — their thinking tends to be both broad and well-grounded.',
+  // Lauren: Strategic+Activator+Adaptability
+  'Strategic+Activator+Adaptability': 'Thinks clearly and moves fast without being rigid. They identify the best path forward, act on it quickly, and adjust smoothly when the situation changes — a strong combination for dynamic environments.',
+  // Samantha: Relator+Empathy+Restorative
+  'Relator+Empathy+Restorative':    'Deeply attuned to people and wired to help them through difficulty. They build real trust, read emotional undercurrents naturally, and bring a problem-solving energy that feels supportive rather than transactional.',
+  // Ashley: Maximizer+Harmony+Consistency
+  'Maximizer+Harmony+Consistency':  'Raises the bar while keeping everyone together. They push for excellence, ensure fairness, and work to reduce friction — making them effective in environments where quality and cohesion both matter.',
+  // Sarah: Woo+Communication+Input
+  'Woo+Communication+Input':        'Opens relationships and tells compelling stories backed by real substance. They connect quickly, communicate naturally, and bring a depth of knowledge that gives their conversations real weight.',
+  // Kevin: Consistency+Communication+Empathy
+  'Consistency+Communication+Empathy': 'Communicates clearly, treats everyone fairly, and genuinely understands where people are coming from. A grounding presence on any team — people know what to expect and feel heard.',
+  // Brenda: Restorative+Strategic+Individualization
+  'Restorative+Strategic+Individualization': 'Diagnoses what\'s not working and finds the right path forward for each person involved. They combine problem-solving instinct with strategic clarity and a nuanced understanding of people.',
+  // Lindsey: Adaptability+Empathy+Responsibility
+  'Adaptability+Empathy+Responsibility': 'Stays flexible and responsive without dropping the ball. They read people well, adjust to what the moment needs, and take genuine ownership of what they commit to.',
+  // Jeff: Competition+Futuristic+Relator
+  'Competition+Futuristic+Relator': 'Driven to win and deeply invested in the people they compete alongside. Their combination of competitive drive, forward vision, and authentic relationship-building makes them a compelling force in high-stakes environments.',
+  // Danny: Achiever+Learner+Responsibility
+  'Achiever+Learner+Responsibility': 'Consistently delivers and keeps getting better at it. They take ownership seriously, stay curious about how to improve, and have the stamina to see things through.',
+  // Leif: Woo+Empathy+Communication
+  'Woo+Empathy+Communication':      'Connects, understands, and communicates naturally. They open doors easily, read people accurately, and express ideas in ways that genuinely land — a strong combination for any people-facing role.',
+  // Todd: Adaptability+Developer+Harmony
+  'Adaptability+Developer+Harmony': 'Flexible, people-focused, and oriented toward keeping the group together. They handle change without drama, invest in others\' growth, and work actively to reduce friction.',
+  // Ryan: Communication+Woo+Context
+  'Communication+Woo+Context':      'Connects easily and tells stories with real depth. They bring people in quickly, communicate compellingly, and ground their thinking in the lessons of the past.',
+  // Chris: Achiever+Strategic+Communication
+  'Achiever+Strategic+Communication': 'Identifies the right path and drives down it. They combine a results-oriented mindset with strategic clarity and a natural ability to communicate what they\'re doing and why — a strong all-around operator.',
+  // Amber Botts: Woo+Input+Positivity
+  'Woo+Input+Positivity':           'Opens any room and keeps the energy high. They connect easily, bring real substance to conversations, and have a natural warmth that makes people feel good about engaging.',
+  // Laura: Activator+Competition+Maximizer
+  'Activator+Competition+Maximizer': 'Gets things started, raises the bar, and pushes hard toward excellent outcomes. They have a high-energy, results-driven presence that naturally elevates the work around them.',
+  // Erica: Woo+Maximizer+Empathy
+  'Woo+Maximizer+Empathy':          'Connects warmly, pushes for excellence, and genuinely understands people. They have a rare combination of social energy and emotional intelligence that makes them effective in high-touch roles.',
+  // Amber Chesterfield: Empathy+Adaptability+Harmony
+  'Empathy+Adaptability+Harmony':   'Reads the room naturally and helps people find common ground. They\'re attuned to what others need, flexible in how they respond, and motivated to reduce unnecessary tension.',
+  // Marvy: Restorative+Learner+Responsibility
+  'Restorative+Learner+Responsibility': 'A committed problem-solver who owns what they take on. They\'re curious enough to understand issues deeply, driven to fix them, and accountable to see it through.',
+  // Hummy: Arranger+Responsibility+Strategic
+  'Arranger+Responsibility+Strategic': 'Organizes complexity, owns the outcome, and has a clear sense of direction. They\'re effective at making sure the right people are doing the right things — and that it actually gets done.',
+  // Katie: Includer+Consistency+Harmony
+  'Includer+Consistency+Harmony':   'Makes sure everyone belongs, treats people fairly, and actively works to reduce friction. A natural keeper of team cohesion and psychological safety.',
+  // Dawn: Restorative+Input+Command
+  'Restorative+Input+Command':      'Identifies what\'s broken, researches it thoroughly, and acts decisively. They combine a diagnostic mind with knowledge depth and a directness that moves situations forward.',
+  // Julie: Individualization+Empathy+Input
+  'Individualization+Empathy+Input': 'Sees each person clearly, understands how they feel, and brings real knowledge to the table. A highly attuned, informed presence — especially effective in coaching and one-on-one work.',
+  // Kiyomi: Learner+Input+Achiever
+  'Learner+Input+Achiever':         'Learns deeply, gathers broadly, and delivers. They\'re driven by both the accumulation of knowledge and the satisfaction of results — their work tends to be both well-informed and well-executed.',
+  // Melody: Developer+Arranger+Empathy
+  'Developer+Arranger+Empathy':     'Invests in people while keeping the work organized. They notice what others could become, understand how they feel, and have a practical ability to make sure things run smoothly around them.',
+  // Shamaine: Restorative+Relator+Ideation
+  'Restorative+Relator+Ideation':   'Solves problems through the lens of relationship and creativity. They diagnose what\'s not working, connect authentically with the people involved, and bring fresh thinking to what a solution could look like.',
+};
+
+function getPersonDescription(p){
+  const t = p.top10;
+  const key1 = `${t[0]}+${t[1]}+${t[2]}`;
+  const key2 = `${t[0]}+${t[2]}+${t[1]}`;
+  if(COMBO_SUMMARY[key1]) return COMBO_SUMMARY[key1];
+  if(COMBO_SUMMARY[key2]) return COMBO_SUMMARY[key2];
+  // Fallback: build a sentence from top 3 STRENGTH_VERB phrases
+  const v0 = STRENGTH_VERB[t[0]] || t[0];
+  const v1 = STRENGTH_VERB[t[1]] || t[1];
+  const v2 = STRENGTH_VERB[t[2]] || t[2];
+  return `Combines ${v0}, ${v1}, and ${v2} — a distinctive blend that shapes how they approach problems, people, and progress.`;
+}
+
+
 function renderMultiComparison(names){
   const people = names.map(byName).filter(Boolean);
   const n = people.length;
@@ -753,19 +878,14 @@ function renderMultiComparison(names){
   ).join('');
   const notableAbsent = realGaps;
 
-  // ── ROLE CARDS — specific to their actual top strengths ──
-  const roleDescriptions = {
-    'Executing':             (p)=>`${p.top10.slice(0,2).join(' + ')} — likely the one who gets things across the finish line`,
-    'Influencing':           (p)=>`${p.top10.slice(0,2).join(' + ')} — likely the one who sells ideas and drives momentum`,
-    'Relationship Building': (p)=>`${p.top10.slice(0,2).join(' + ')} — likely the one who holds the team together`,
-    'Strategic Thinking':    (p)=>`${p.top10.slice(0,2).join(' + ')} — likely the one thinking ahead and spotting patterns`,
-  };
+
+
   const rolesHtml = people.map(p=>{
     const c=dc(p.domain);
     return `<div class="role-card" style="border-left-color:${c.bar};background:${c.light}">
       <div class="role-card-name" style="color:${c.text}">${p.name}</div>
-      <div class="role-card-title" style="font-size:0.68rem;color:${c.text};opacity:0.75;text-transform:uppercase;letter-spacing:0.05em;">${p.domain}</div>
-      <div class="role-card-desc">${roleDescriptions[p.domain](p)}</div>
+      <div style="font-size:0.62rem;color:${c.text};opacity:0.7;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px;">${p.top10.slice(0,3).join(' · ')}</div>
+      <div class="role-card-desc">${getPersonDescription(p)}</div>
     </div>`;
   }).join('');
 
