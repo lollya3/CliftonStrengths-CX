@@ -412,7 +412,27 @@ function goExplore(){
 // ── FILTER ──
 function applyFilter(){
   currentFilter = document.getElementById('group-filter').value;
+  const searchEl = document.getElementById('people-search');
+  const q = searchEl ? searchEl.value.toLowerCase().trim() : '';
+
+  // If a specific group is selected (not 'all'), auto-select all visible people
+  if(currentFilter !== 'all' && !q){
+    const LEADERSHIP_NAMES = ['John Webster','Robert Hinsch','Samantha Marion','Jeff Nonte','Desiree Friedman','Lori Atone'];
+    selectedPeople = PEOPLE.filter(p=>{
+      if(currentFilter==='Leadership') return LEADERSHIP_NAMES.includes(p.name);
+      if(currentFilter==='Marketing') return p.group==='Marketing';
+      if(currentFilter==='Sales') return p.group==='Sales';
+      if(currentFilter==='CSS') return p.group==='CSS';
+      return false;
+    }).map(p=>p.name);
+  } else if(currentFilter === 'all'){
+    // Clear selections when going back to All CX
+    selectedPeople = [];
+  }
+
   renderGrid();
+  updateSelectionCount();
+  renderAnalysis();
 }
 
 function personVisible(p){
@@ -453,7 +473,7 @@ function renderGrid(){
       <div class="tile-domain-bar" style="background:${c.bar}"></div>
       <div class="tile-name">${p.name}</div>
       <div class="tile-role">${p.role}</div>
-      <div class="tile-team">${p.subgroup}</div>
+      ${p.subgroup && p.subgroup!==p.role && !p.role.includes(p.subgroup) && !p.subgroup.includes(p.role)?`<div class="tile-team">${p.subgroup}</div>`:''}
     </button>`;
   }).join('');
 }
@@ -933,109 +953,109 @@ function renderMultiComparison(names){
 
     if(tipItems){
       tipsHtml = `<div class="analysis-section-title">Working together</div>
+      <div style="font-size:0.75rem;color:var(--muted);margin-bottom:10px;display:flex;gap:14px;"><span><span style="color:var(--green);font-size:0.85rem;">★</span> Shared strength</span><span><span style="color:var(--amber);font-size:0.85rem;">◈</span> Complementary strength</span></div>
       <div style="background:var(--bg);border-radius:10px;padding:14px 16px;margin-bottom:14px;">${tipItems}</div>`;
     }
 
   } else if(n>2){
-    // For groups: one best insight per pair, spread across all pairs
-    // First pass: collect the best insight for each unique pair
+    // ── COLLECTIVE INSIGHTS: strengths shared by 3+ people get called out as a group ──
+    const COLLECTIVE_INSIGHT = {
+      'Learner':    `All or most of this group leads with Learner — expect them to engage seriously with new information and grow quickly when given exposure to new challenges. Feed this with regular learning opportunities.`,
+      'Strategic':  `Multiple people in this group lead with Strategic — they'll naturally anticipate obstacles and find the best path forward. Use this by giving them real problems to think through, not just tasks to execute.`,
+      'Futuristic': `Several people here share Futuristic — this group is energized by what's possible. Anchor your conversations in vision and make sure there's space to think beyond today.`,
+      'Relator':    `This group has strong Relator representation — trust runs deep here when cultivated. Invest in real relationship time, not just transactional meetings.`,
+      'Achiever':   `Multiple Achievers in this group means high output is natural — make sure goals are clear and visible so this energy gets channeled effectively.`,
+      'Responsibility': `Several people share Responsibility — ownership and follow-through come naturally. Make sure roles and commitments are explicit so this strength has room to shine.`,
+      'Empathy':    `This group has strong Empathy — they read people well and create genuine psychological safety. Use that in customer-facing work and in navigating difficult team conversations.`,
+      'Arranger':   `Multiple Arrangers here means this group is naturally good at reorganizing for maximum efficiency. Give them room to rethink how work gets done — they'll improve it.`,
+      'Input':      `Several people share Input — this group loves to gather knowledge. Create ways for them to share what they're learning with each other and the broader team.`,
+      'Ideation':   `Multiple people lead with Ideation — this group generates creative connections naturally. Structured brainstorming sessions will bring out the best in this combination.`,
+      'Positivity': `Strong Positivity across this group creates a naturally uplifting environment. Use this energy intentionally in challenging moments — it's a genuine leadership asset.`,
+      'Harmony':    `Several people share Harmony — this group works well together and naturally reduces friction. Be deliberate about surfacing real disagreements before they go underground.`,
+      'Adaptability': `Multiple Adaptability themes here means this group handles change well. Model that flexibility for others in the organization who may find transitions harder.`,
+      'Developer':  `This group has strong Developer energy — people's growth gets noticed here. Be intentional about creating development conversations, because this group will naturally follow through on them.`,
+      'Discipline': `Several people share Discipline — structure and precision come naturally. Lean into this when projects need rigor, and make sure creative freedom has its own protected space.`,
+      'Focus':      `Multiple Focus themes here means this group stays on target naturally. Align on priorities early — once focused, this group moves fast.`,
+      'Communication': `Strong Communication across this group means ideas get articulated well. Create regular opportunities to share thinking broadly — this group has a natural talent for bringing others along.`,
+      'Woo':        `Multiple Woo themes here means this group opens doors easily. Use this in external-facing situations — new relationships and first impressions are a natural strength.`,
+      'Connectedness': `Several people share Connectedness — this group sees meaning and purpose in their work. Connect daily tasks to the bigger picture regularly; it energizes this combination.`,
+      'Maximizer':  `Multiple Maximizers here means this group is wired for excellence. Identify the areas that most deserve that standard so this energy is channeled well.`,
+      'Restorative': `Several people share Restorative — problem-solving comes naturally here. Make sure to also celebrate what's working, not just what needs fixing.`,
+      'Analytical': `Multiple Analytical themes here means evidence matters to this group. Bring data and reasoning to important decisions — this group will engage more deeply with well-supported ideas.`,
+      'Individualization': `Strong Individualization across this group means people feel genuinely seen here. Use this in how you assign work and give feedback — it builds real trust.`,
+    };
+
+    const collectiveTips = [];
+    // Find strengths shared by 3+ people
+    const collectiveStrengths = topGroupStrengths.filter(([s,cnt])=>cnt>=3 && cnt<n && COLLECTIVE_INSIGHT[s]);
+    // Also check if ALL share it
+    const universalStrengths = topGroupStrengths.filter(([s,cnt])=>cnt===n && COLLECTIVE_INSIGHT[s]);
+    
+    [...universalStrengths, ...collectiveStrengths].slice(0,2).forEach(([s,cnt])=>{
+      collectiveTips.push(`<div style="display:flex;align-items:flex-start;gap:7px;margin-bottom:8px;">
+        <span style="color:var(--green);flex-shrink:0;font-size:0.78rem;margin-top:2px;">★</span>
+        <span style="font-size:0.82rem;color:var(--text);line-height:1.55;"><strong>${cnt===n?'Everyone':'Most of this group'} shares ${s}:</strong> ${COLLECTIVE_INSIGHT[s]}</span>
+      </div>`);
+    });
+
+    // Round-robin pair insights
+    const personAppearances = {};
+    people.forEach(p=>{ personAppearances[p.name]=0; });
     const pairInsights = [];
-    const usedPeople = new Set(); // track which people have been featured
+    const usedInsightKeys = new Set();
 
-    // Build all pairs sorted by number of shared strengths (most shared = most interesting first)
-    const allPairs = [];
-    for(let i=0; i<people.length; i++){
-      for(let j=i+1; j<people.length; j++){
-        const pX=people[i], pY=people[j];
-        const sharedXY=pX.top10.filter(s=>pY.top10.includes(s));
-        allPairs.push({pX, pY, sharedXY, shared: sharedXY.length});
+    function findBestInsight(pX, pY){
+      const sharedXY = pX.top10.filter(s=>pY.top10.includes(s));
+      const xUniq = pX.top10.filter(s=>!pY.top10.includes(s));
+      const yUniq = pY.top10.filter(s=>!pX.top10.includes(s));
+      for(let a=0;a<sharedXY.length;a++) for(let b=a+1;b<sharedXY.length;b++){
+        const key=getPairKey(sharedXY[a],sharedXY[b]);
+        if(key && !usedInsightKeys.has(key)) return {type:'shared', key, s1:sharedXY[a], s2:sharedXY[b]};
       }
+      for(let a=0;a<xUniq.length;a++) for(let b=0;b<yUniq.length;b++){
+        const key=getPairKey(xUniq[a],yUniq[b]);
+        if(key && !usedInsightKeys.has(key)) return {type:'cross', key, s1:xUniq[a], s2:yUniq[b]};
+      }
+      return null;
     }
-    allPairs.sort((a,b)=>b.shared-a.shared);
 
-    // First pass: one insight per pair, prioritize pairs not yet featured
-    for(const {pX, pY, sharedXY} of allPairs){
-      if(pairInsights.length >= Math.min(people.length, 5)) break;
+    const maxPairInsights = Math.max(0, Math.min(people.length + 2, 8) - collectiveTips.length);
 
-      // Try to find one good insight for this pair
-      let found = false;
-
-      // Try shared strength pairs
-      for(let a=0; a<sharedXY.length && !found; a++){
-        for(let b=a+1; b<sharedXY.length && !found; b++){
-          const key=getPairKey(sharedXY[a],sharedXY[b]);
-          if(key && !usedInsights.has(key)){
-            usedInsights.add(key);
-            pairInsights.push({
-              type:'shared', pX, pY,
-              label:`${pX.name.split(' ')[0]} + ${pY.name.split(' ')[0]} share ${sharedXY[a]} & ${sharedXY[b]}`,
-              text:PAIR_INSIGHTS[key]
-            });
-            found = true;
-          }
-        }
-      }
-
-      // If no shared insight, try complementary
-      if(!found){
-        const xUniq=pX.top10.filter(s=>!pY.top10.includes(s));
-        const yUniq=pY.top10.filter(s=>!pX.top10.includes(s));
-        for(let a=0; a<xUniq.length && !found; a++){
-          for(let b=0; b<yUniq.length && !found; b++){
-            const key=getPairKey(xUniq[a],yUniq[b]);
-            if(key && !usedInsights.has(key)){
-              usedInsights.add(key);
-              pairInsights.push({
-                type:'cross', pX, pY,
-                label:`${pX.name.split(' ')[0]}'s ${xUniq[a]} + ${pY.name.split(' ')[0]}'s ${yUniq[b]}`,
-                text:PAIR_INSIGHTS[key]
-              });
-              found = true;
-            }
+    for(let pass=0; pass<4 && pairInsights.length<maxPairInsights; pass++){
+      const sorted = [...people].sort((a,b)=>personAppearances[a.name]-personAppearances[b.name]);
+      for(const pFocus of sorted){
+        if(pairInsights.length>=maxPairInsights) break;
+        const partners = [...people].filter(p=>p.name!==pFocus.name).sort((a,b)=>personAppearances[a.name]-personAppearances[b.name]);
+        for(const pPartner of partners){
+          const insight = findBestInsight(pFocus, pPartner);
+          if(insight){
+            usedInsightKeys.add(insight.key);
+            personAppearances[pFocus.name]++;
+            personAppearances[pPartner.name]++;
+            const fFirst = pFocus.name.split(' ')[0];
+            const pFirst = pPartner.name.split(' ')[0];
+            const label = insight.type==='shared'
+              ? `${fFirst} + ${pFirst} — ${insight.s1} & ${insight.s2}`
+              : `${fFirst}'s ${insight.s1} + ${pFirst}'s ${insight.s2}`;
+            pairInsights.push({type:insight.type, label, text:PAIR_INSIGHTS[insight.key]});
+            break;
           }
         }
       }
     }
 
-    // Second pass: if some people haven't been featured yet, try to add one more insight for them
-    const featuredPeople = new Set(pairInsights.flatMap(p=>[p.pX.name, p.pY.name]));
-    const unfeaatured = people.filter(p=>!featuredPeople.has(p.name));
-    for(const pMiss of unfeaatured){
-      if(pairInsights.length >= people.length) break;
-      for(const pOther of people){
-        if(pOther.name === pMiss.name) continue;
-        const sharedXY = pMiss.top10.filter(s=>pOther.top10.includes(s));
-        const xUniq = pMiss.top10.filter(s=>!pOther.top10.includes(s));
-        const yUniq = pOther.top10.filter(s=>!pMiss.top10.includes(s));
-        let found = false;
-        for(let a=0; a<xUniq.length && !found; a++){
-          for(let b=0; b<yUniq.length && !found; b++){
-            const key=getPairKey(xUniq[a],yUniq[b]);
-            if(key && !usedInsights.has(key)){
-              usedInsights.add(key);
-              pairInsights.push({
-                type:'cross', pX:pMiss, pY:pOther,
-                label:`${pMiss.name.split(' ')[0]}'s ${xUniq[a]} + ${pOther.name.split(' ')[0]}'s ${yUniq[b]}`,
-                text:PAIR_INSIGHTS[key]
-              });
-              found = true;
-            }
-          }
-        }
-        if(found) break;
-      }
-    }
-
-    const groupTipItems = pairInsights.map(t=>
-      `<div style="display:flex;align-items:flex-start;gap:7px;margin-bottom:8px;">
+    const allTipItems = [
+      ...collectiveTips,
+      ...pairInsights.map(t=>`<div style="display:flex;align-items:flex-start;gap:7px;margin-bottom:8px;">
         <span style="color:${t.type==='shared'?'var(--green)':'var(--amber)'};flex-shrink:0;font-size:0.78rem;margin-top:2px;">${t.type==='shared'?'★':'◈'}</span>
         <span style="font-size:0.82rem;color:var(--text);line-height:1.55;"><strong>${t.label}:</strong> ${t.text}</span>
-      </div>`
-    );
+      </div>`)
+    ];
 
-    if(groupTipItems.length){
+    if(allTipItems.length){
       tipsHtml = `<div class="analysis-section-title">Working together</div>
-      <div style="background:var(--bg);border-radius:10px;padding:14px 16px;margin-bottom:14px;">${groupTipItems.join('')}</div>`;
+      <div style="font-size:0.75rem;color:var(--muted);margin-bottom:10px;display:flex;gap:14px;"><span><span style="color:var(--green);font-size:0.85rem;">★</span> Shared strength</span><span><span style="color:var(--amber);font-size:0.85rem;">◈</span> Complementary strength</span></div>
+      <div style="background:var(--bg);border-radius:10px;padding:14px 16px;margin-bottom:14px;">${allTipItems.join('')}</div>`;
     }
   }
 
