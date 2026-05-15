@@ -567,11 +567,11 @@ function renderSideBySide(names){
     const c=dc(p.domain); const cardId=p.name.replace(/\s/g,'-').replace(/\'/g,'');
     const r=REFLECTIONS[p.name]; const top5=p.top10.slice(0,5); const rest5=p.top10.slice(5,10);
     const reflAnswer = r.bring ? `<span style="font-style:italic;">"${r.bring}"</span>` : `<span class="refl-empty">—</span>`;
-    return `<div style="background:var(--bg);border-radius:10px;padding:12px 14px;min-width:0;border-left:3px solid ${c.bar};">
+    return `<div style="background:var(--bg);border-radius:10px;padding:14px 16px;min-width:0;border-left:3px solid ${c.bar};overflow:hidden;">
       <div style="display:flex;align-items:center;gap:7px;margin-bottom:7px;">
         <div style="width:32px;height:32px;border-radius:50%;background:${c.bar};color:white;display:flex;align-items:center;justify-content:center;font-family:\'Outfit\',sans-serif;font-size:0.58rem;font-weight:700;flex-shrink:0;letter-spacing:0.02em;">${roleAbbr(p)}</div>
         <div style="flex:1;min-width:0;">
-          <div style="font-weight:700;font-size:0.85rem;line-height:1.2;">${p.name}</div>
+          <div style="font-weight:700;font-size:0.85rem;line-height:1.3;word-break:break-word;">${p.name}</div>
           <span style="background:${c.light};color:${c.text};padding:1px 6px;border-radius:100px;font-size:0.58rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;display:inline-block;margin-top:2px;">${p.domain}</span>
         </div>
       </div>
@@ -591,9 +591,9 @@ function renderSideBySide(names){
       </div>
     </div>`;
   }).join('');
-  const cols = Math.min(people.length, 4);
+  const cols = Math.min(people.length, 3);
   return `<div style="font-size:0.82rem;color:var(--muted);margin-bottom:10px;">${people.length} people selected · hover any strength to see its description · click <strong style="color:var(--text)">Analyze Group</strong> above for team dynamics</div>
-  <div style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:10px;">${cards}</div>`;
+  <div style="display:grid;grid-template-columns:repeat(${cols},minmax(0,1fr));gap:12px;">${cards}</div>`;
 }
 
 
@@ -790,91 +790,196 @@ function renderMultiComparison(names){
     </div>`;
   }
 
-  // ── TIPS FOR WORKING TOGETHER ──
-  // Based on shared strengths + domain combination
-  const SHARED_STRENGTH_TIPS = {
-    'Achiever':         'Set clear goals with measurable milestones — both will be energized by visible progress.',
-    'Relator':          'Invest in 1:1 time — this pairing builds best through genuine, trust-based connection.',
-    'Learner':          'Share what you\'re each learning — curiosity is mutual and can spark great conversations.',
-    'Responsibility':   'Clarify who owns what early — both take ownership seriously and may step on each other\'s toes.',
-    'Strategic':        'Think out loud together — this pairing does its best work in a good thinking conversation.',
-    'Futuristic':       'Give each other space to dream — then agree on how to bring it back to what\'s actionable now.',
-    'Empathy':          'Check in on each other — both are attuned to people and can support each other well.',
-    'Harmony':          'Be explicit about disagreements — both may avoid conflict; make sure issues don\'t get buried.',
-    'Ideation':         'Use each other as a sounding board — ideas will spark more ideas in this pairing.',
-    'Input':            'Share resources and knowledge — both love to collect and curate, and can learn a lot from each other.',
-    'Focus':            'Align on priorities upfront — when both are focused, make sure it\'s on the same thing.',
-    'Discipline':       'Create shared systems — both will appreciate structure; build it together so it works for both.',
-    'Woo':              'Leverage this energy in external-facing situations — together they can open almost any door.',
-    'Communication':    'Give each other airtime — both are natural communicators; be intentional about listening too.',
-    'Positivity':       'Let this energy lift the people around you — this pairing has a contagious effect on a team.',
-    'Adaptability':     'Embrace the unexpected together — this pairing handles change well and can model that for others.',
-    'Maximizer':        'Push each other toward excellence — but check in on whether \'good enough\' is sometimes the right call.',
-    'Arranger':         'Coordinate early on logistics and priorities — both like things organized; combine rather than duplicate.',
+
+  // ── WORKING TOGETHER TIPS — specific, non-repeating ──
+  const PAIR_INSIGHTS = {
+    'Futuristic+Ideation':      'Together they generate a powerful vision-to-idea pipeline — Futuristic paints where things are going, Ideation finds novel ways to get there. Give this pair space to think out loud; their brainstorms tend to be worth capturing.',
+    'Futuristic+Strategic':     'Futuristic sees the destination, Strategic maps the route — together they can anticipate obstacles most people haven\'t thought of yet. They\'re at their best in planning conversations where the horizon matters.',
+    'Futuristic+Learner':       'Both are pulled toward what\'s next — Futuristic through vision, Learner through continuous growth. This pair energizes each other and can help the broader team stay curious and forward-looking.',
+    'Futuristic+Analytical':    'One dreams it, the other pressure-tests it. Together they develop ideas that are both inspiring and defensible.',
+    'Futuristic+Significance':  'Both are motivated by meaningful, lasting impact. Together they can inspire a team with a compelling vision of why the work matters.',
+    'Ideation+Learner':         'Learner feeds Ideation — the more this pair takes in, the more they generate. Expect rich, well-informed thinking from them on complex or novel problems.',
+    'Ideation+Strategic':       'Ideation generates the options, Strategic selects the best path. Together they move from possibility to plan faster than either would alone.',
+    'Ideation+Input':           'One collects ideas, the other collects information. Together they build a rich knowledge base that fuels creative problem-solving.',
+    'Ideation+Activator':       'Ideation generates the spark, Activator lights the fire. This pair is excellent at turning fresh thinking into immediate momentum.',
+    'Strategic+Learner':        'Strategic sees the pattern, Learner provides the context. This pair makes well-informed decisions and adapts their thinking as new information arrives.',
+    'Strategic+Analytical':     'Strategic spots the path, Analytical validates it. Together they\'re hard to catch off-guard and rarely make decisions without solid reasons.',
+    'Strategic+Input':          'Input gives Strategic the raw material it needs. This pair tends to be well-prepared and draws on a wide range of knowledge when solving problems.',
+    'Strategic+Activator':      'Activator moves fast, Strategic moves smart. Together they balance speed with direction — a powerful combination for executing on good ideas quickly.',
+    'Strategic+Maximizer':      'Strategic finds the best path, Maximizer makes sure the execution is excellent. A strong partnership for anything where quality matters.',
+    'Analytical+Learner':       'Both need to understand deeply before acting. Together they create a culture of rigor — valuable for any decision that matters.',
+    'Analytical+Input':         'A research-minded pair — they gather, analyze, and build well-grounded conclusions. Lean on them when the team needs to think something through carefully.',
+    'Analytical+Context':       'Context provides the historical lens, Analytical the logical framework. Together they ask both "what does the data say?" and "what does history tell us?"',
+    'Analytical+Restorative':   'Restorative diagnoses the problem, Analytical figures out why. Together they\'re systematic, thorough troubleshooters.',
+    'Analytical+Deliberative':  'A careful, risk-aware pair. Together they slow the group down in the best way — asking questions that prevent avoidable mistakes.',
+    'Learner+Input':            'Learner loves the process of growing, Input loves collecting knowledge. Together they build deep expertise and are great resources for the team.',
+    'Learner+Context':          'Context brings lessons from the past, Learner brings curiosity about what\'s next. Together they help the team avoid repeating mistakes while still evolving.',
+    'Intellection+Learner':     'Both need time to think. Give this pair space to reflect before deciding — their best thinking doesn\'t always happen in the moment.',
+    'Intellection+Analytical':  'Deep, careful thinkers who complement each other\'s rigor. Excellent for anything requiring sustained intellectual effort.',
+    'Intellection+Strategic':   'Intellection slows down to think deeply, Strategic moves to the best option — a valuable push-pull that tends to produce sound decisions.',
+    'Relator+Empathy':          'A deeply human-centered pair — Relator builds authentic bonds, Empathy reads the emotional landscape. Together they create environments where people feel genuinely seen and trusted.',
+    'Relator+Developer':        'Relator invests deeply in individuals, Developer helps them grow. Together they\'re a powerful coaching partnership — people around them feel valued and supported.',
+    'Relator+Individualization': 'Both see people as individuals, not roles. This pair naturally tailors their approach to each person and builds the kind of trust that lasts.',
+    'Relator+Harmony':          'Both prioritize authentic, low-friction relationships. Together they create psychologically safe environments where people can do their best work.',
+    'Relator+Positivity':       'Warmth and optimism — people feel good around this pair. They naturally bring out the best in those around them.',
+    'Empathy+Developer':        'Empathy senses where people are, Developer sees where they could go. Together they\'re exceptionally effective coaches and mentors.',
+    'Empathy+Harmony':          'Both are attuned to emotional dynamics and motivated to reduce friction. This pair keeps the team\'s relational health in good shape.',
+    'Empathy+Includer':         'A highly welcoming combination — both notice who might feel left out. Together they create genuinely inclusive environments.',
+    'Empathy+Positivity':       'Empathy senses what people need, Positivity helps them feel better. A naturally supportive pair that others turn to in difficult moments.',
+    'Empathy+Adaptability':     'Both respond to what\'s happening in the moment — one emotionally, one situationally. Together they\'re calm, attuned, and easy to work with.',
+    'Developer+Individualization': 'Developer grows people, Individualization knows how to grow each one differently. Together they\'re exceptional at personalized coaching.',
+    'Developer+Positivity':     'Developer sees potential, Positivity celebrates progress. Together they create a growth-oriented environment that feels encouraging, not pressured.',
+    'Harmony+Includer':         'Both work to make everyone feel part of the group. Excellent at consensus-building and making sure no one gets left behind.',
+    'Harmony+Adaptability':     'Flexible and collaborative — this pair handles change without drama and helps others do the same.',
+    'Includer+Positivity':      'A welcoming, energizing combination. This pair naturally expands the circle and makes new people feel immediately at home.',
+    'Connectedness+Empathy':    'Both see people as deeply interconnected. Together they help the team understand how individual actions affect the whole and bring a sense of shared purpose.',
+    'Connectedness+Harmony':    'Both seek unity — Connectedness through shared purpose, Harmony through agreement. Together they\'re excellent at bringing divided groups together.',
+    'Individualization+Empathy': 'A highly attuned pair — Individualization understands what makes each person unique, Empathy understands how they feel. Together they\'re outstanding at tailored support.',
+    'Adaptability+Positivity':  'Easygoing and optimistic — this pair handles uncertainty with grace and helps others stay calm when plans change.',
+    'Achiever+Responsibility':  'Both are wired to deliver. Together they raise the bar on follow-through — and they hold each other to it without needing to be asked.',
+    'Achiever+Focus':           'Achiever provides the drive, Focus the direction. Together they\'re highly productive and hard to distract once they\'re aligned on a goal.',
+    'Achiever+Discipline':      'Achiever wants to get things done, Discipline makes sure they\'re done right. Together they deliver consistently and reliably.',
+    'Achiever+Arranger':        'Achiever drives output, Arranger optimizes how the work gets organized. Together they accomplish a lot and adapt fluidly as things shift.',
+    'Achiever+Maximizer':       'Achiever wants to finish, Maximizer wants to finish excellently. Together they push each other toward outstanding outcomes rather than just completed ones.',
+    'Achiever+Activator':       'Activator starts it, Achiever finishes it. This pair is especially effective because neither is content to leave things undone.',
+    'Responsibility+Focus':     'Both take ownership seriously and stay on target. Excellent for anything requiring sustained commitment and accountability.',
+    'Responsibility+Discipline': 'Highly reliable — Responsibility owns the commitment, Discipline executes with precision. People know they can count on this pair.',
+    'Responsibility+Consistency': 'Both value fairness and follow-through. Together they\'re trusted anchors — people always know what to expect from them.',
+    'Focus+Discipline':         'A precision pair — both cut through distraction and execute with structure. Excellent at seeing complex projects through to completion.',
+    'Discipline+Arranger':      'Discipline creates the structure, Arranger optimizes within it. Together they\'re excellent at managing complex logistics and keeping workstreams on track.',
+    'Restorative+Focus':        'Both are goal-oriented problem solvers. This pair doesn\'t get overwhelmed by challenges — they get focused.',
+    'Deliberative+Responsibility': 'Both think carefully before committing and take commitments seriously. A highly trustworthy pair for anything high-stakes.',
+    'Consistency+Responsibility': 'Both hold themselves and others to clear standards. Together they create fairness and accountability — people always know where they stand.',
+    'Woo+Communication':        'A natural front-of-room pair — Woo opens the door, Communication tells the story. Together they\'re compelling in any people-facing situation.',
+    'Woo+Positivity':           'Magnetic together — warm, energetic, easy to be around. This pair naturally expands networks and lifts the energy in any room.',
+    'Woo+Activator':            'Woo gets people interested, Activator gets them moving. Together they\'re excellent at launching new initiatives and bringing others along.',
+    'Communication+Activator':  'Communication frames the message, Activator creates urgency. Together they drive change and get people genuinely engaged.',
+    'Communication+Positivity': 'Both are naturally engaging and uplifting. Together they\'re communicators who make people feel good about the work.',
+    'Command+Activator':        'Both move decisively and create momentum. Together they\'re effective at cutting through ambiguity and getting things unstuck.',
+    'Command+Significance':     'Both are driven to make an impact. Together they can be a powerful force — and they tend to complement each other\'s confidence.',
+    'Command+Self-Assurance':   'Confident and decisive — this pair doesn\'t second-guess in high-pressure moments. At their best when the team needs clear direction quickly.',
+    'Maximizer+Significance':   'Both are motivated by excellence and impact. Together they set a high bar and hold themselves to it.',
+    'Self-Assurance+Significance': 'Both have strong inner conviction and want their work to matter. Together they\'re quietly powerful — they don\'t need external validation to do great work.',
   };
 
-  const DOMAIN_COMBO_TIPS = {
-    'Executing+Executing':                       'Strong follow-through — agree on who leads what so accountability is clear and effort isn\'t duplicated.',
-    'Executing+Influencing':                     'One gets it done, the other gets people on board — let each lead where they\'re strongest.',
-    'Executing+Relationship Building':           'A natural balance of results and relationships — lean into it, especially in high-pressure moments.',
-    'Executing+Strategic Thinking':              'Ideas and execution in one partnership — make sure planning and doing stay in sync.',
-    'Influencing+Influencing':                   'High energy and strong voices — be deliberate about slowing down to listen and reflect.',
-    'Influencing+Relationship Building':         'Magnetic together — one connects, the other inspires. Great for anything people-facing.',
-    'Influencing+Strategic Thinking':            'Vision and persuasion — a powerful combination for selling ideas and driving change.',
-    'Relationship Building+Relationship Building':'Deep trust and connection — be intentional about hard conversations and follow-through.',
-    'Relationship Building+Strategic Thinking':  'Thoughtful and people-centered — strong for planning initiatives that need team buy-in.',
-    'Strategic Thinking+Strategic Thinking':     'Excellent thinking partners — make sure ideas turn into action; partner with executors.',
-  };
+  function getPairKey(a, b){
+    return `${a}+${b}` in PAIR_INSIGHTS ? `${a}+${b}` : `${b}+${a}` in PAIR_INSIGHTS ? `${b}+${a}` : null;
+  }
 
   let tipsHtml = '';
+  const usedInsights = new Set(); // track which insights have been shown to avoid repeats
+  const usedStrengths = new Set(); // track which strengths have been mentioned
+
   if(n===2){
     const pA=people[0], pB=people[1];
     const shared=pA.top10.filter(s=>pB.top10.includes(s));
-    // Get tips from shared strengths
-    const sharedTips = shared.slice(0,3).filter(s=>SHARED_STRENGTH_TIPS[s]).map(s=>
-      `<div style="display:flex;align-items:flex-start;gap:7px;margin-bottom:7px;">
-        <span style="color:var(--green);flex-shrink:0;font-size:0.8rem;margin-top:1px;">★</span>
-        <span style="font-size:0.82rem;color:var(--text);line-height:1.5;"><strong>${s}:</strong> ${SHARED_STRENGTH_TIPS[s]}</span>
-      </div>`
-    ).join('');
-    // Domain combo tip
-    const domKey1 = pA.domain+'+'+pB.domain;
-    const domKey2 = pB.domain+'+'+pA.domain;
-    const domTip = DOMAIN_COMBO_TIPS[domKey1] || DOMAIN_COMBO_TIPS[domKey2] || '';
-    if(sharedTips || domTip){
-      tipsHtml = `<div class="analysis-section-title">Working together</div>
-      <div style="background:var(--bg);border-radius:10px;padding:12px 14px;margin-bottom:16px;">
-        ${domTip?`<div style="display:flex;align-items:flex-start;gap:7px;margin-bottom:${sharedTips?'10px':'0'};">
-          <span style="color:var(--amber);flex-shrink:0;font-size:0.8rem;margin-top:1px;">◈</span>
-          <span style="font-size:0.82rem;color:var(--text);line-height:1.5;">${domTip}</span>
-        </div>`:''}
-        ${sharedTips}
-      </div>`;
+
+    // Find pair insights from shared strengths - pick best non-repeating ones
+    const strengthTips = [];
+    for(let i=0; i<shared.length && strengthTips.length<3; i++){
+      for(let j=i+1; j<shared.length && strengthTips.length<3; j++){
+        const key = getPairKey(shared[i], shared[j]);
+        if(key && !usedInsights.has(key)){
+          usedInsights.add(key);
+          usedStrengths.add(shared[i]);
+          usedStrengths.add(shared[j]);
+          strengthTips.push({key, s1:shared[i], s2:shared[j], text:PAIR_INSIGHTS[key]});
+        }
+      }
     }
-  } else if(n>2){
-    // For groups: domain-based tips
-    const domKeys = [...new Set(people.map(p=>p.domain))];
-    const groupTips = [];
-    if(domainMap['Executing'].length>0 && domainMap['Strategic Thinking'].length>0)
-      groupTips.push('This group has both thinkers and doers — use that. Let strategic people frame the problem, executing people drive the solution.');
-    if(domainMap['Relationship Building'].length>0)
-      groupTips.push('The relationship builders in this group can be connectors — lean on them to hold the group together during high-stress moments.');
-    if(domainMap['Influencing'].length>0)
-      groupTips.push('Use the influencers in this group to champion work externally and bring others along. They\'re at their best when the message needs to travel.');
-    if(dominant.length>0)
-      groupTips.push(`Everyone shares <strong>${dominant.slice(0,2).join(' and ')}</strong> — build on that common language when navigating disagreement.`);
-    if(groupTips.length){
+
+    // Also check cross-person pair insights (A's strength with B's unique strength)
+    const aUnique = pA.top10.filter(s=>!pB.top10.includes(s));
+    const bUnique = pB.top10.filter(s=>!pA.top10.includes(s));
+    for(let i=0; i<aUnique.length && strengthTips.length<4; i++){
+      for(let j=0; j<bUnique.length && strengthTips.length<4; j++){
+        const key = getPairKey(aUnique[i], bUnique[j]);
+        if(key && !usedInsights.has(key) && !usedStrengths.has(aUnique[i]) && !usedStrengths.has(bUnique[j])){
+          usedInsights.add(key);
+          usedStrengths.add(aUnique[i]);
+          usedStrengths.add(bUnique[j]);
+          strengthTips.push({key, s1:aUnique[i], s2:bUnique[j], text:PAIR_INSIGHTS[key], cross:true});
+        }
+      }
+    }
+
+    // Domain combo insight
+    const DOMAIN_COMBO_TIPS = {
+      'Executing+Influencing':                     `One gets it done, the other gets people on board — let each lead where they\'re strongest and watch how much ground they cover together.`,
+      'Executing+Relationship Building':           `A natural balance of results and relationships — especially valuable in high-pressure moments when both need to be present.`,
+      'Executing+Strategic Thinking':              `Ideas and execution in one partnership — make sure planning and doing stay in sync so neither gets ahead of the other.`,
+      'Influencing+Relationship Building':         `One connects deeply, the other energizes broadly. Together they\'re excellent in any people-facing situation and naturally build followership.`,
+      'Influencing+Strategic Thinking':            `Vision and persuasion — a powerful combination for selling ideas and driving meaningful change.`,
+      'Relationship Building+Strategic Thinking':  `Thoughtful and people-centered — strong for planning initiatives that need both good thinking and genuine team buy-in.`,
+      'Executing+Executing':                       `Strong follow-through on both sides — agree early on who leads what so accountability is clear and effort isn\'t duplicated.`,
+      'Influencing+Influencing':                   `High energy and strong voices on both sides — be deliberate about creating space to slow down, listen, and reflect together.`,
+      'Relationship Building+Relationship Building':`Deep trust and genuine connection — be intentional about hard conversations and follow-through so the relationship stays honest.`,
+      'Strategic Thinking+Strategic Thinking':     `Excellent thinking partners with a shared love of complexity — make sure ideas turn into action by building in execution checkpoints.`,
+    };
+    const domKey1 = `${pA.domain}+${pB.domain}`;
+    const domKey2 = `${pB.domain}+${pA.domain}`;
+    const domTip = DOMAIN_COMBO_TIPS[domKey1] || DOMAIN_COMBO_TIPS[domKey2] || '';
+
+    const tipItems = [
+      domTip ? `<div style="display:flex;align-items:flex-start;gap:7px;margin-bottom:8px;">
+        <span style="color:var(--amber);flex-shrink:0;font-size:0.8rem;margin-top:2px;">◈</span>
+        <span style="font-size:0.82rem;color:var(--text);line-height:1.55;">${domTip}</span>
+      </div>` : '',
+      ...strengthTips.map(t=>`<div style="display:flex;align-items:flex-start;gap:7px;margin-bottom:8px;">
+        <span style="color:var(--green);flex-shrink:0;font-size:0.78rem;margin-top:2px;">★</span>
+        <span style="font-size:0.82rem;color:var(--text);line-height:1.55;"><strong>${t.s1} + ${t.s2}:</strong> ${t.text}</span>
+      </div>`)
+    ].filter(Boolean).join('');
+
+    if(tipItems){
       tipsHtml = `<div class="analysis-section-title">Working together</div>
-      <div style="background:var(--bg);border-radius:10px;padding:12px 14px;margin-bottom:16px;">
-        ${groupTips.map(t=>`<div style="display:flex;align-items:flex-start;gap:7px;margin-bottom:7px;">
-          <span style="color:var(--amber);flex-shrink:0;font-size:0.8rem;margin-top:1px;">◈</span>
-          <span style="font-size:0.82rem;color:var(--text);line-height:1.5;">${t}</span>
-        </div>`).join('')}
-      </div>`;
+      <div style="background:var(--bg);border-radius:10px;padding:14px 16px;margin-bottom:14px;">${tipItems}</div>`;
+    }
+
+  } else if(n>2){
+    // For groups: find non-repeating pair insights across all combinations
+    const groupTipItems = [];
+    for(let i=0; i<people.length && groupTipItems.length<4; i++){
+      for(let j=i+1; j<people.length && groupTipItems.length<4; j++){
+        const pX=people[i], pY=people[j];
+        const sharedXY = pX.top10.filter(s=>pY.top10.includes(s));
+        // Try shared strength pairs first
+        for(let a=0; a<sharedXY.length && groupTipItems.length<4; a++){
+          for(let b=a+1; b<sharedXY.length && groupTipItems.length<4; b++){
+            const key=getPairKey(sharedXY[a],sharedXY[b]);
+            if(key && !usedInsights.has(key) && !usedStrengths.has(sharedXY[a]) && !usedStrengths.has(sharedXY[b])){
+              usedInsights.add(key); usedStrengths.add(sharedXY[a]); usedStrengths.add(sharedXY[b]);
+              groupTipItems.push(`<div style="display:flex;align-items:flex-start;gap:7px;margin-bottom:8px;">
+                <span style="color:var(--green);flex-shrink:0;font-size:0.78rem;margin-top:2px;">★</span>
+                <span style="font-size:0.82rem;color:var(--text);line-height:1.55;"><strong>${pX.name.split(' ')[0]} + ${pY.name.split(' ')[0]} share ${sharedXY[a]} & ${sharedXY[b]}:</strong> ${PAIR_INSIGHTS[key]}</span>
+              </div>`);
+            }
+          }
+        }
+        // Try cross-person complementary pairs
+        const xUniq=pX.top10.filter(s=>!pY.top10.includes(s));
+        const yUniq=pY.top10.filter(s=>!pX.top10.includes(s));
+        for(let a=0; a<xUniq.length && groupTipItems.length<4; a++){
+          for(let b=0; b<yUniq.length && groupTipItems.length<4; b++){
+            const key=getPairKey(xUniq[a],yUniq[b]);
+            if(key && !usedInsights.has(key) && !usedStrengths.has(xUniq[a]) && !usedStrengths.has(yUniq[b])){
+              usedInsights.add(key); usedStrengths.add(xUniq[a]); usedStrengths.add(yUniq[b]);
+              groupTipItems.push(`<div style="display:flex;align-items:flex-start;gap:7px;margin-bottom:8px;">
+                <span style="color:var(--amber);flex-shrink:0;font-size:0.78rem;margin-top:2px;">◈</span>
+                <span style="font-size:0.82rem;color:var(--text);line-height:1.55;"><strong>${pX.name.split(' ')[0]}'s ${xUniq[a]} + ${pY.name.split(' ')[0]}'s ${yUniq[b]}:</strong> ${PAIR_INSIGHTS[key]}</span>
+              </div>`);
+            }
+          }
+        }
+      }
+    }
+    if(groupTipItems.length){
+      tipsHtml = `<div class="analysis-section-title">Working together</div>
+      <div style="background:var(--bg);border-radius:10px;padding:14px 16px;margin-bottom:14px;">${groupTipItems.join('')}</div>`;
     }
   }
 
-  // ── COMPACT DOMAIN BALANCE (inline, no big boxes) ──
+    // ── COMPACT DOMAIN BALANCE (inline, no big boxes) ──
   const domainBalanceCompact = DOMAINS.map(d=>{
     const c=dc(d); const cnt=domainMap[d].length; const pct=Math.round(cnt/n*100);
     const flag = cnt===0 ? `<span style="font-size:0.7rem;margin-left:3px;">🟡</span>` : '';
@@ -889,11 +994,67 @@ function renderMultiComparison(names){
   }).join('');
 
   // ── SHARED STRENGTHS chips ──
+  // ── SHARED STRENGTHS chips ──
   const sharedChips = dominant.length
     ? dominant.map(s=>{ const sc=dc(sd(s)); return `<span class="shared-chip" style="background:${sc.light};color:${sc.text}">${s}</span>`; }).join('')
     : common.length
     ? common.slice(0,8).map(s=>{ const sc=dc(sd(s)); const cnt=freqMap[s]; return `<span class="shared-chip" style="background:${sc.light};color:${sc.text}">${s} <span style="opacity:0.6;font-size:0.65rem;">${cnt}/${n}</span></span>`; }).join('')
     : `<span style="font-size:0.82rem;color:var(--muted);font-style:italic;">Wide range of perspectives — no strengths shared across all.</span>`;
+
+  // ── ENHANCEMENT TIP ──
+  const STRENGTH_ENHANCE = {
+    'Relator':          'Because this group leads with deep relationship building, create regular space for 1:1 conversations — even brief check-ins strengthen the trust that makes this group perform.',
+    'Learner':          'Because this group is wired to grow, bring a new idea, article, or challenge to your next meeting — collective curiosity is one of your biggest assets.',
+    'Achiever':         'Because this group is driven by progress, make goals visible and celebrate milestones explicitly — momentum is your fuel.',
+    'Responsibility':   'Because this group takes ownership seriously, be explicit about who owns what — it prevents duplication and lets everyone deliver at their best.',
+    'Strategic':        'Because this group thinks strategically, protect time for planning conversations — rushed decisions undersell what this group can do.',
+    'Futuristic':       'Because this group is energized by possibility, set a regular time to discuss "what could be" — it keeps the work feeling meaningful and forward-looking.',
+    'Empathy':          'Because this group is attuned to people, check in on how the team is doing beyond the task — you\'ll catch things others miss before they become problems.',
+    'Harmony':          'Because this group values consensus, name disagreements explicitly when they arise — this group handles conflict better than it avoids it.',
+    'Ideation':         'Because this group generates ideas naturally, build in a way to capture and filter them — a shared "ideas parking lot" prevents good thinking from getting lost.',
+    'Positivity':       'Because this group brings natural energy and optimism, use that to set the tone in meetings and difficult conversations — it\'s a genuine leadership asset.',
+    'Activator':        'Because this group moves to action quickly, build in a brief "have we thought this through?" checkpoint before launching — it sharpens what your instincts already know.',
+    'Developer':        'Because this group naturally invests in others, make development conversations a regular habit — what comes naturally to you doesn\'t always happen unless you make it intentional.',
+    'Analytical':       'Because this group thinks rigorously, bring data and evidence to decisions — this group does its best work when it has good information to work with.',
+    'Focus':            'Because this group is highly goal-oriented, align on top priorities at the start of any project — once this group locks in, they move fast.',
+    'Input':            'Because this group loves to collect knowledge, create a way to share what you\'re each learning — a shared resource or quick weekly "what I found" keeps the collective intelligence growing.',
+    'Discipline':       'Because this group values structure, build clear processes for recurring work — it frees up mental energy for the challenges that actually need creative thinking.',
+    'Connectedness':    'Because this group sees the bigger picture, help others understand why the work matters — your natural sense of purpose is contagious when you articulate it.',
+    'Individualization':'Because this group sees what makes each person unique, use that in how you assign work and give feedback — people perform best when they feel seen for who they actually are.',
+    'Maximizer':        'Because this group is wired for excellence, identify the one or two things that most deserve that standard — not everything needs to be great, but what you choose to maximize should be.',
+    'Woo':              'Because this group connects easily with new people, leverage that in external relationships, partnerships, and any situation where first impressions matter.',
+    'Communication':    'Because this group communicates naturally, be intentional about listening modes — your ability to share is an asset; pairing it with active listening makes it a superpower.',
+    'Consistency':      'Because this group values fairness and clear standards, document decisions and norms explicitly — it prevents confusion and keeps trust high.',
+    'Adaptability':     'Because this group is comfortable with change, help others in the broader team who may not be — you can model calm and flexibility in ways that genuinely reduce stress.',
+    'Restorative':      'Because this group is energized by solving problems, make sure to also celebrate what\'s working — problem-solvers sometimes move too fast past their own wins.',
+    'Includer':         'Because this group is attuned to who might feel left out, be deliberate about inviting quieter voices into key conversations — you\'ll often surface insights others miss.',
+    'Context':          'Because this group learns from history, share relevant past experiences before making key decisions — your institutional knowledge is more valuable than it might seem.',
+    'Intellection':     'Because this group thinks deeply, protect thinking time — back-to-back meetings and reactive days are the enemy of your best work.',
+    'Belief':           'Because this group is values-driven, make the values behind decisions explicit — when others understand your "why," they\'re more likely to follow your lead.',
+    'Deliberative':     'Because this group thinks carefully before acting, your risk-spotting is an asset — share your concerns early in planning conversations, not just before a decision.',
+    'Self-Assurance':   'Because this group trusts its own judgment, actively seek outside perspectives on important decisions — your confidence is a strength; blind spots are where it can trip you up.',
+    'Significance':     'Because this group is motivated by meaningful impact, connect daily work to larger outcomes regularly — it keeps energy high and effort purposeful.',
+    'Command':          'Because this group is direct and decisive, pair that with genuine curiosity about others\' views — your clarity is valuable; making space for input makes it even more effective.',
+    'Competition':      'Because this group is motivated by results and measurement, make progress visible — dashboards, metrics, and clear goals keep this group energized and focused.',
+    'Arranger':         'Because this group is skilled at organizing people and resources, step up in moments of complexity — you see configurations others miss, and that\'s genuinely useful.',
+  };
+
+  // Pick one tip based on most common strength or heaviest domain
+  let enhanceTip = '';
+  const topStrength = topGroupStrengths[0]?.[0];
+  if(topStrength && STRENGTH_ENHANCE[topStrength]){
+    enhanceTip = STRENGTH_ENHANCE[topStrength];
+  } else {
+    // Fall back to heaviest domain
+    const heaviestDomain = DOMAINS.slice().sort((a,b)=>domainMap[b].length-domainMap[a].length)[0];
+    const DOMAIN_ENHANCE = {
+      'Executing':             'Because this group is wired to deliver, make goals and milestones explicit and visible — clear targets unlock what this group does naturally.',
+      'Influencing':           'Because this group communicates and energizes naturally, be deliberate about creating listening time — your ability to influence is strongest when people feel heard first.',
+      'Relationship Building': 'Because this group leads with trust and connection, invest in regular check-ins even when things are going well — the relationships you maintain in calm times carry you through difficult ones.',
+      'Strategic Thinking':    'Because this group thinks ahead naturally, build in structured time to step back from the day-to-day — your best value is in the thinking others don\'t slow down enough to do.',
+    };
+    enhanceTip = DOMAIN_ENHANCE[heaviestDomain] || '';
+  }
 
   return `<div style="margin-bottom:14px;">
     <div style="font-family:'Playfair Display',serif;font-size:1.1rem;margin-bottom:2px;">Group Analysis — ${n} people</div>
@@ -906,10 +1067,14 @@ function renderMultiComparison(names){
   <div class="role-grid" style="margin-bottom:14px;">${rolesHtml}</div>
   ${tipsHtml}
   ${notableAbsent.length?`<div class="analysis-section-title">Potential gaps</div><div style="margin-bottom:14px;">${absentFlags.replace(/🚩/g,'🟡')}</div>`:''}
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:8px;">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:10px;">
     <div>
       <div class="analysis-section-title">${dominant.length?'Shared by everyone':common.length?'Most common strengths':'Strengths in common'}</div>
-      <div style="display:flex;flex-wrap:wrap;gap:5px;">${sharedChips}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;">${sharedChips}</div>
+      ${enhanceTip?`<div style="display:flex;align-items:flex-start;gap:7px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
+        <span style="color:var(--amber);flex-shrink:0;font-size:0.78rem;margin-top:2px;">💡</span>
+        <span style="font-size:0.78rem;color:var(--text);line-height:1.55;">${enhanceTip}</span>
+      </div>`:''}
     </div>
     <div>
       <div class="analysis-section-title">Domain balance</div>
