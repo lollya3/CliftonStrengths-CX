@@ -937,42 +937,102 @@ function renderMultiComparison(names){
     }
 
   } else if(n>2){
-    // For groups: find non-repeating pair insights across all combinations
-    const groupTipItems = [];
-    for(let i=0; i<people.length && groupTipItems.length<4; i++){
-      for(let j=i+1; j<people.length && groupTipItems.length<4; j++){
+    // For groups: one best insight per pair, spread across all pairs
+    // First pass: collect the best insight for each unique pair
+    const pairInsights = [];
+    const usedPeople = new Set(); // track which people have been featured
+
+    // Build all pairs sorted by number of shared strengths (most shared = most interesting first)
+    const allPairs = [];
+    for(let i=0; i<people.length; i++){
+      for(let j=i+1; j<people.length; j++){
         const pX=people[i], pY=people[j];
-        const sharedXY = pX.top10.filter(s=>pY.top10.includes(s));
-        // Try shared strength pairs first
-        for(let a=0; a<sharedXY.length && groupTipItems.length<4; a++){
-          for(let b=a+1; b<sharedXY.length && groupTipItems.length<4; b++){
-            const key=getPairKey(sharedXY[a],sharedXY[b]);
-            if(key && !usedInsights.has(key) && !usedStrengths.has(sharedXY[a]) && !usedStrengths.has(sharedXY[b])){
-              usedInsights.add(key); usedStrengths.add(sharedXY[a]); usedStrengths.add(sharedXY[b]);
-              groupTipItems.push(`<div style="display:flex;align-items:flex-start;gap:7px;margin-bottom:8px;">
-                <span style="color:var(--green);flex-shrink:0;font-size:0.78rem;margin-top:2px;">★</span>
-                <span style="font-size:0.82rem;color:var(--text);line-height:1.55;"><strong>${pX.name.split(' ')[0]} + ${pY.name.split(' ')[0]} share ${sharedXY[a]} & ${sharedXY[b]}:</strong> ${PAIR_INSIGHTS[key]}</span>
-              </div>`);
-            }
+        const sharedXY=pX.top10.filter(s=>pY.top10.includes(s));
+        allPairs.push({pX, pY, sharedXY, shared: sharedXY.length});
+      }
+    }
+    allPairs.sort((a,b)=>b.shared-a.shared);
+
+    // First pass: one insight per pair, prioritize pairs not yet featured
+    for(const {pX, pY, sharedXY} of allPairs){
+      if(pairInsights.length >= Math.min(people.length, 5)) break;
+
+      // Try to find one good insight for this pair
+      let found = false;
+
+      // Try shared strength pairs
+      for(let a=0; a<sharedXY.length && !found; a++){
+        for(let b=a+1; b<sharedXY.length && !found; b++){
+          const key=getPairKey(sharedXY[a],sharedXY[b]);
+          if(key && !usedInsights.has(key)){
+            usedInsights.add(key);
+            pairInsights.push({
+              type:'shared', pX, pY,
+              label:`${pX.name.split(' ')[0]} + ${pY.name.split(' ')[0]} share ${sharedXY[a]} & ${sharedXY[b]}`,
+              text:PAIR_INSIGHTS[key]
+            });
+            found = true;
           }
         }
-        // Try cross-person complementary pairs
+      }
+
+      // If no shared insight, try complementary
+      if(!found){
         const xUniq=pX.top10.filter(s=>!pY.top10.includes(s));
         const yUniq=pY.top10.filter(s=>!pX.top10.includes(s));
-        for(let a=0; a<xUniq.length && groupTipItems.length<4; a++){
-          for(let b=0; b<yUniq.length && groupTipItems.length<4; b++){
+        for(let a=0; a<xUniq.length && !found; a++){
+          for(let b=0; b<yUniq.length && !found; b++){
             const key=getPairKey(xUniq[a],yUniq[b]);
-            if(key && !usedInsights.has(key) && !usedStrengths.has(xUniq[a]) && !usedStrengths.has(yUniq[b])){
-              usedInsights.add(key); usedStrengths.add(xUniq[a]); usedStrengths.add(yUniq[b]);
-              groupTipItems.push(`<div style="display:flex;align-items:flex-start;gap:7px;margin-bottom:8px;">
-                <span style="color:var(--amber);flex-shrink:0;font-size:0.78rem;margin-top:2px;">◈</span>
-                <span style="font-size:0.82rem;color:var(--text);line-height:1.55;"><strong>${pX.name.split(' ')[0]}'s ${xUniq[a]} + ${pY.name.split(' ')[0]}'s ${yUniq[b]}:</strong> ${PAIR_INSIGHTS[key]}</span>
-              </div>`);
+            if(key && !usedInsights.has(key)){
+              usedInsights.add(key);
+              pairInsights.push({
+                type:'cross', pX, pY,
+                label:`${pX.name.split(' ')[0]}'s ${xUniq[a]} + ${pY.name.split(' ')[0]}'s ${yUniq[b]}`,
+                text:PAIR_INSIGHTS[key]
+              });
+              found = true;
             }
           }
         }
       }
     }
+
+    // Second pass: if some people haven't been featured yet, try to add one more insight for them
+    const featuredPeople = new Set(pairInsights.flatMap(p=>[p.pX.name, p.pY.name]));
+    const unfeaatured = people.filter(p=>!featuredPeople.has(p.name));
+    for(const pMiss of unfeaatured){
+      if(pairInsights.length >= people.length) break;
+      for(const pOther of people){
+        if(pOther.name === pMiss.name) continue;
+        const sharedXY = pMiss.top10.filter(s=>pOther.top10.includes(s));
+        const xUniq = pMiss.top10.filter(s=>!pOther.top10.includes(s));
+        const yUniq = pOther.top10.filter(s=>!pMiss.top10.includes(s));
+        let found = false;
+        for(let a=0; a<xUniq.length && !found; a++){
+          for(let b=0; b<yUniq.length && !found; b++){
+            const key=getPairKey(xUniq[a],yUniq[b]);
+            if(key && !usedInsights.has(key)){
+              usedInsights.add(key);
+              pairInsights.push({
+                type:'cross', pX:pMiss, pY:pOther,
+                label:`${pMiss.name.split(' ')[0]}'s ${xUniq[a]} + ${pOther.name.split(' ')[0]}'s ${yUniq[b]}`,
+                text:PAIR_INSIGHTS[key]
+              });
+              found = true;
+            }
+          }
+        }
+        if(found) break;
+      }
+    }
+
+    const groupTipItems = pairInsights.map(t=>
+      `<div style="display:flex;align-items:flex-start;gap:7px;margin-bottom:8px;">
+        <span style="color:${t.type==='shared'?'var(--green)':'var(--amber)'};flex-shrink:0;font-size:0.78rem;margin-top:2px;">${t.type==='shared'?'★':'◈'}</span>
+        <span style="font-size:0.82rem;color:var(--text);line-height:1.55;"><strong>${t.label}:</strong> ${t.text}</span>
+      </div>`
+    );
+
     if(groupTipItems.length){
       tipsHtml = `<div class="analysis-section-title">Working together</div>
       <div style="background:var(--bg);border-radius:10px;padding:14px 16px;margin-bottom:14px;">${groupTipItems.join('')}</div>`;
