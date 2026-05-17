@@ -23,18 +23,18 @@
 body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.6;}
 
 /* ── HEADER ── */
-.header{background:var(--dark);color:white;padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:200;}
-.header-brand{display:flex;align-items:center;gap:12px;}
-.header-brand img{height:30px;width:auto;}
-.header-brand h1{font-family:'Playfair Display',serif;font-size:1rem;font-weight:600;color:white;letter-spacing:-0.01em;}
-.header-brand p{font-size:0.65rem;color:#999;margin-top:1px;}
-.nav-tabs{display:flex;gap:2px;}
-.nav-tab{background:none;border:none;color:#888;padding:8px 14px;font-family:'Outfit',sans-serif;font-size:0.72rem;font-weight:500;cursor:pointer;border-radius:6px;transition:all 0.15s;letter-spacing:0.05em;text-transform:uppercase;}
+.header{background:var(--dark);color:white;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:52px;position:sticky;top:0;z-index:200;}
+.header-brand{display:flex;align-items:center;gap:10px;min-width:0;}
+.header-brand img{height:28px;width:auto;flex-shrink:0;}
+.header-brand h1{font-family:'Playfair Display',serif;font-size:0.85rem;font-weight:600;color:white;letter-spacing:-0.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.header-brand p{font-size:0.6rem;color:#999;margin-top:1px;}
+.nav-tabs{display:flex;gap:1px;flex-shrink:0;}
+.nav-tab{background:none;border:none;color:#888;padding:6px 10px;font-family:'Outfit',sans-serif;font-size:0.65rem;font-weight:500;cursor:pointer;border-radius:6px;transition:all 0.15s;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap;}
 .nav-tab:hover{color:white;background:rgba(255,255,255,0.08);}
 .nav-tab.active{color:white;border-bottom:2px solid var(--amber);}
 
 /* ── MAIN ── */
-main{padding:24px 32px;max-width:1400px;margin:0 auto;}
+main{padding:16px;max-width:1400px;margin:0 auto;}
 .view{display:none;}
 .view.active{display:block;}
 
@@ -48,7 +48,7 @@ main{padding:24px 32px;max-width:1400px;margin:0 auto;}
 .explore-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,0.2);}
 
 /* ── EXPLORER VIEW ── */
-.explorer-controls{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap;}
+.explorer-controls{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
 .group-select{border:1.5px solid var(--border);border-radius:8px;padding:7px 12px;font-family:'Outfit',sans-serif;font-size:0.85rem;background:var(--surface);outline:none;cursor:pointer;color:var(--text);}
 .group-select:focus{border-color:#999;}
 .reset-btn{background:none;border:1.5px solid var(--border);border-radius:8px;padding:7px 16px;font-family:'Outfit',sans-serif;font-size:0.82rem;color:var(--muted);cursor:pointer;transition:all 0.15s;}
@@ -58,8 +58,8 @@ main{padding:24px 32px;max-width:1400px;margin:0 auto;}
 
 /* ── ANALYSIS PANEL ── */
 .analysis-panel{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;margin-bottom:20px;overflow:hidden;}
-.analysis-empty{padding:24px 28px;font-size:1rem;font-weight:500;color:var(--muted);}
-.analysis-content{padding:16px 22px;}
+.analysis-empty{padding:16px;font-size:0.9rem;font-weight:500;color:var(--muted);}
+.analysis-content{padding:12px 16px;}
 
 /* SINGLE PERSON PROFILE */
 .profile-header{display:flex;align-items:flex-start;gap:16px;margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:16px;}
@@ -121,7 +121,7 @@ main{padding:24px 32px;max-width:1400px;margin:0 auto;}
 .analysis-section-title{font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;font-weight:700;color:var(--muted);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);}
 
 /* ── PERSON GRID ── */
-.person-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;}
+.person-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px;}
 .person-tile{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;cursor:pointer;transition:all 0.15s;position:relative;text-align:left;font-family:'Outfit',sans-serif;}
 .person-tile:hover{box-shadow:0 3px 12px rgba(0,0,0,0.1);transform:translateY(-1px);}
 .person-tile.selected{border-width:2px;box-shadow:0 0 0 3px rgba(0,0,0,0.08);}
@@ -169,10 +169,26 @@ main{padding:24px 32px;max-width:1400px;margin:0 auto;}
 .drc-chip{padding:2px 8px;border-radius:100px;font-size:0.68rem;font-weight:500;background:white;border:1px solid rgba(0,0,0,0.08);}
 
 @media(max-width:900px){
-  main{padding:16px 20px;}
-  .header{padding:0 20px;}
+  main{padding:12px 16px;}
+  .header{padding:0 16px;}
   .domain-bars{grid-template-columns:1fr;}
   .comparison-grid{grid-template-columns:1fr 1fr;}
+  .role-grid{grid-template-columns:1fr 1fr;}
+}
+@media(max-width:600px){
+  main{padding:10px 12px;}
+  .header-brand h1{font-size:0.78rem;}
+  .nav-tab{padding:5px 7px;font-size:0.6rem;}
+  .person-grid{grid-template-columns:repeat(2,1fr);}
+  .group-select{width:100%;}
+  .explorer-controls{gap:6px;}
+  .role-grid{grid-template-columns:1fr;}
+  .analysis-content{padding:10px 12px;}
+  .domain-bars{grid-template-columns:1fr;}
+  .comparison-grid{grid-template-columns:1fr;}
+  .pairing-desc{padding:12px 14px;}
+  .intro-wrap h2{font-size:1.6rem;}
+  .intro-wrap{margin:24px auto;}
 }
 </style>
 </head>
@@ -219,7 +235,7 @@ main{padding:24px 32px;max-width:1400px;margin:0 auto;}
       <option value="CSS">Customer Support</option>
       <option value="Marketing">Marketing</option>
     </select>
-    <input type="text" id="people-search" placeholder="Search by name…" oninput="applyFilter()" style="border:1.5px solid var(--border);border-radius:8px;padding:7px 12px;font-family:'Outfit',sans-serif;font-size:0.85rem;background:var(--surface);outline:none;color:var(--text);width:200px;">
+    <input type="text" id="people-search" placeholder="Search by name…" oninput="applySearch()" style="border:1.5px solid var(--border);border-radius:8px;padding:7px 12px;font-family:'Outfit',sans-serif;font-size:0.85rem;background:var(--surface);outline:none;color:var(--text);width:160px;">
     <button class="reset-btn" onclick="resetSelections()">↺ Reset</button>
     <button class="analyze-btn" id="analyze-btn" onclick="analyzeGroup()" style="display:none;">Analyze Group</button>
     <span class="selection-count" id="selection-count"></span>
@@ -413,10 +429,10 @@ function goExplore(){
 function applyFilter(){
   currentFilter = document.getElementById('group-filter').value;
   const searchEl = document.getElementById('people-search');
-  const q = searchEl ? searchEl.value.toLowerCase().trim() : '';
+  if(searchEl) searchEl.value = ''; // clear search when changing group filter
 
   // If a specific group is selected (not 'all'), auto-select all visible people
-  if(currentFilter !== 'all' && !q){
+  if(currentFilter !== 'all'){
     const LEADERSHIP_NAMES = ['John Webster','Robert Hinsch','Samantha Marion','Jeff Nonte','Desiree Friedman','Lori Atone'];
     selectedPeople = PEOPLE.filter(p=>{
       if(currentFilter==='Leadership') return LEADERSHIP_NAMES.includes(p.name);
@@ -425,7 +441,7 @@ function applyFilter(){
       if(currentFilter==='CSS') return p.group==='CSS';
       return false;
     }).map(p=>p.name);
-  } else if(currentFilter === 'all'){
+  } else {
     // Clear selections when going back to All CX
     selectedPeople = [];
   }
@@ -433,6 +449,11 @@ function applyFilter(){
   renderGrid();
   updateSelectionCount();
   renderAnalysis();
+}
+
+function applySearch(){
+  // Search just filters the grid — never touches selections
+  renderGrid();
 }
 
 function personVisible(p){
@@ -514,7 +535,18 @@ function renderAnalysis(){
 function updateAnalyzeBtn(){
   const btn = document.getElementById('analyze-btn');
   if(!btn) return;
-  btn.style.display = selectedPeople.length >= 2 ? 'inline-block' : 'none';
+  const n = selectedPeople.length;
+  if(n === 1){
+    btn.style.display = 'inline-block';
+    btn.textContent = 'Analyze ' + selectedPeople[0].split(' ')[0];
+    btn.onclick = analyzeSinglePerson;
+  } else if(n >= 2){
+    btn.style.display = 'inline-block';
+    btn.textContent = 'Analyze Group';
+    btn.onclick = analyzeGroup;
+  } else {
+    btn.style.display = 'none';
+  }
 }
 
 function analyzeGroup(){
@@ -523,6 +555,108 @@ function analyzeGroup(){
   const content = document.getElementById('analysis-content');
   content.style.display = 'block';
   content.innerHTML = renderMultiComparison(selectedPeople);
+}
+
+async function analyzeSinglePerson(){
+  if(selectedPeople.length !== 1) return;
+  const p = byName(selectedPeople[0]);
+  if(!p) return;
+  const content = document.getElementById('analysis-content');
+  document.getElementById('analysis-empty').style.display = 'none';
+  content.style.display = 'block';
+
+  // Show the profile card + a loading state for the deep analysis
+  const c = dc(p.domain);
+  const cardId = p.name.replace(/\s/g,'-').replace(/'/g,'');
+  content.innerHTML = renderSingleProfile(p.name) +
+    `<div id="deep-analysis-section" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+      <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:600;margin-bottom:10px;">Deep Analysis</div>
+      <div id="deep-analysis-content" style="font-size:0.85rem;color:var(--text);line-height:1.7;">
+        <div style="display:flex;align-items:center;gap:8px;color:var(--muted);font-size:0.82rem;">
+          <div style="width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--text);border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+          Analyzing ${p.name}'s strengths...
+        </div>
+      </div>
+    </div>`;
+
+  // Add spin animation if not already there
+  if(!document.getElementById('spin-style')){
+    const style = document.createElement('style');
+    style.id = 'spin-style';
+    style.textContent = '@keyframes spin{to{transform:rotate(360deg)}}';
+    document.head.appendChild(style);
+  }
+
+  // Build the prompt
+  const bb = p.top10.map(s => {
+    const data = STRENGTHS_BB[s];
+    return data ? `${s} (Balcony: ${data.balcony}; Basement: ${data.basement})` : s;
+  }).join('\n');
+
+  const prompt = `You are a CliftonStrengths expert analyzing a real person on a team. Be specific, insightful, and genuinely useful — not generic. Every sentence should feel like it could only apply to this person.
+
+Person: ${p.name}
+Role: ${p.role}, ${p.subgroup}
+Top 10 CliftonStrengths (in order): ${p.top10.join(', ')}
+Domain: ${p.domain}
+
+Balcony and basement for each strength:
+${bb}
+
+Write a deep, personalized analysis in exactly this structure — use these exact section headers with nothing before them:
+
+**What drives ${p.name.split(' ')[0]}**
+2-3 sentences about what energizes and motivates this person based on their specific top 3-4 strengths working together. Be concrete, not generic.
+
+**How their mind works**
+2-3 sentences about their thinking and problem-solving style — how their specific combination of strengths shapes their approach. Reference actual strengths by name.
+
+**What they bring to a team**
+2-3 sentences about their most distinctive contributions — what this person specifically adds that others may not. Be precise.
+
+**What to watch for**
+2 sentences about where their strengths can work against them under pressure or overuse. Softened language — not critical, just honest. Reference their actual strengths.
+
+**How to work best with ${p.name.split(' ')[0]}**
+2-3 sentences of specific, actionable advice for teammates or managers working with this person. Based on their actual strengths.
+
+Keep each section tight. No filler. No phrases that could apply to anyone else.`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await response.json();
+    const text = data.content?.[0]?.text || 'Unable to generate analysis.';
+
+    // Format the markdown into HTML
+    const formatted = text
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .split('\n\n')
+      .map(para => {
+        if(para.startsWith('<strong>')) {
+          const parts = para.split('\n');
+          const header = parts[0];
+          const body = parts.slice(1).join(' ').trim();
+          return `<div style="margin-bottom:14px;">
+            <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:600;margin-bottom:4px;">${header}</div>
+            <div>${body}</div>
+          </div>`;
+        }
+        return `<p style="margin-bottom:10px;">${para}</p>`;
+      }).join('');
+
+    document.getElementById('deep-analysis-content').innerHTML = formatted;
+  } catch(err) {
+    document.getElementById('deep-analysis-content').innerHTML =
+      `<div style="color:var(--muted);font-size:0.82rem;">Unable to generate analysis right now. Please try again.</div>`;
+  }
 }
 
 // ── SINGLE PROFILE (compact) ──
@@ -611,7 +745,7 @@ function renderSideBySide(names){
       </div>
     </div>`;
   }).join('');
-  const cols = Math.min(people.length, 3);
+  const cols = window.innerWidth < 600 ? 1 : Math.min(people.length, window.innerWidth < 900 ? 2 : 3);
   return `<div style="font-size:0.82rem;color:var(--muted);margin-bottom:10px;">${people.length} people selected · hover any strength to see its description · click <strong style="color:var(--text)">Analyze Group</strong> above for team dynamics</div>
   <div style="display:grid;grid-template-columns:repeat(${cols},minmax(0,1fr));gap:12px;">${cards}</div>`;
 }
