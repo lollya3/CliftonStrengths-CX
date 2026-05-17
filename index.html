@@ -563,107 +563,263 @@ function analyzeGroup(){
   content.innerHTML = renderMultiComparison(selectedPeople);
 }
 
-async function analyzeSinglePerson(){
+const DEEP_ANALYSES = {
+  'John Webster': {
+    drives: 'John is energized by deep relationships, continuous learning, and thinking ahead. The combination of Relator and Learner means he invests seriously in the people around him while always looking to grow — and Futuristic keeps that growth oriented toward what\'s possible rather than what\'s comfortable.',
+    mind: 'His mind works through connection and pattern-recognition over time. Relator and Intellection mean he processes ideas deeply and personally — he\'s not just thinking about the problem, he\'s thinking about the people affected by it. Strategic then helps him translate that depth into a clear direction.',
+    brings: 'John brings a rare combination of trusted relationship and forward vision. He can hold both the long view and the personal connection simultaneously — which makes him effective in moments where the team needs to move in a new direction without losing trust.',
+    watch: 'With Intellection and Relator both pulling toward depth and loyalty, John may take longer to act on difficult decisions that affect people he cares about. The same thoughtfulness that makes him trustworthy can slow him down when speed is needed.',
+    work_with: 'Give John time to think before major decisions — his best thinking doesn\'t happen in the moment. Be direct and personal with him; he responds well to genuine conversation and is more engaged when he understands the human context behind the work.'
+  },
+  'Robert Hinsch': {
+    drives: 'Robert is driven by ownership, rigorous thinking, and the satisfaction of solving real problems. Responsibility and Analytical together mean he doesn\'t just want to understand something — he wants to own the process of figuring it out and see it through.',
+    mind: 'He approaches problems systematically and with genuine accountability. Analytical gives him the framework, Ideation gives him the creative angle, and Responsibility keeps him from walking away before it\'s resolved. He\'s a rare thinker who also delivers.',
+    brings: 'Robert brings intellectual depth combined with personal accountability — a combination that\'s hard to find. He\'s the person you want on a complex problem that matters, because he\'ll both think it through carefully and own the outcome.',
+    watch: 'Responsibility and Analytical can make it hard for Robert to let go of a problem or delegate effectively. He may hold himself to standards that create pressure, and may take on more than is sustainable when accountability feels personal.',
+    work_with: 'Be clear about scope and boundaries — Robert will take full ownership of whatever he commits to, so make sure the commitment is realistic. Bring him into problems early and give him access to the data he needs to think well.'
+  },
+  'Lori Atone': {
+    drives: 'Lori is energized by generating ideas and then actually doing something with them. Ideation and Activator together create a rare push-pull: she\'s excited by what could be, and impatient to make it real. Learner keeps her pulling in new inputs to fuel that cycle.',
+    mind: 'Her mind moves fast — from concept to connection to action. Strategic and Futuristic mean she\'s not just generating random ideas; she\'s spotting patterns and thinking toward where things are headed. She processes by doing as much as by thinking.',
+    brings: 'Lori brings the ability to move ideas from concept to momentum faster than most. She sees possibilities others miss, has the strategic sense to filter the good ones, and the activation energy to get things started before the group loses interest.',
+    watch: 'Activator and Ideation together can mean starting more than can be finished. Lori may move to the next idea before the current one is complete, and may underestimate how much structure others need to follow her thinking.',
+    work_with: 'Match her energy in early conversations, then help her build in follow-through checkpoints. Ask her to slow down and articulate the thinking behind her ideas — not because the ideas aren\'t good, but because others will implement them better when they understand the why.'
+  },
+  'Desiree Friedman': {
+    drives: 'Desiree is energized by being well-informed, strategically sharp, and consistently excellent in her output. Input and Learner mean she\'s always building her knowledge base, and Strategic and Achiever mean that knowledge gets converted into clear direction and real results.',
+    mind: 'She thinks broadly and then narrows. Input collects the landscape, Strategic identifies the best path through it, and Achiever drives toward the finish line. Discipline keeps her from getting distracted along the way.',
+    brings: 'Desiree brings well-grounded strategic thinking backed by genuine follow-through. She\'s not just a planner — she delivers. And her knowledge base means her strategies are informed by more context than most people bring to the table.',
+    watch: 'Achiever and Discipline together can make it hard to slow down or shift direction once she\'s committed to a course of action. She may push through when pausing to reassess would serve the work better.',
+    work_with: 'Come prepared — Desiree respects people who\'ve done their homework. Give her clear goals and get out of her way. If direction needs to change, be direct and give her the reasoning; she\'ll adjust, but she needs to understand why.'
+  },
+  'Dan McGowan': {
+    drives: 'Dan is energized by people, energy, and making sure everyone is part of what\'s happening. Positivity, Woo, and Includer together create someone who genuinely lights up a room — not as a performance, but because connection and inclusion are what feel meaningful to him.',
+    mind: 'His mind works through people. He reads the energy in the room, spots who\'s disengaged, and naturally finds ways to bring them in. Communication means he can then articulate ideas in ways that land — his thinking is as much about the audience as the content.',
+    brings: 'Dan brings contagious energy, genuine warmth, and the ability to make anyone feel welcome and engaged. He\'s especially valuable at the start of new initiatives, in external relationships, and in any moment where the team needs to feel good about the work.',
+    watch: 'Positivity and Woo can mean that difficult conversations get softened or avoided. Dan may prioritize keeping the energy positive over surfacing a real problem that needs direct attention.',
+    work_with: 'Use Dan in situations that benefit from warmth and broad connection — don\'t bury him in solitary analytical work. When you need him to deliver hard feedback, help him see it as an act of care rather than conflict, which is how it lands best for him.'
+  },
+  'Emily Skaar': {
+    drives: 'Emily is energized by understanding things deeply, staying grounded in values, and seeing each person as an individual. Context, Belief, and Individualization together create a thoughtful, principled presence who learns from history and holds herself to consistent standards.',
+    mind: 'She thinks through the lens of precedent, principle, and person. Context helps her understand why something happened. Belief helps her evaluate whether it aligns with what matters. Individualization helps her understand who\'s affected and how.',
+    brings: 'Emily brings a rare combination of institutional wisdom, ethical grounding, and genuine attentiveness to the individual. She\'s the person who remembers what worked before, holds the team\'s values steady, and notices when someone isn\'t being seen.',
+    watch: 'Context and Belief together can make it harder to move fast on decisions that feel like departures from precedent or principle. Emily may need more time to trust new directions, especially if they feel disconnected from what\'s worked before.',
+    work_with: 'Connect new directions to historical context and to the values the team already holds. She responds well to approaches that honor what came before, even when the goal is change. And take time to have real conversations with her — she notices when she\'s being treated as a function rather than a person.'
+  },
+  'Kristi Tucker': {
+    drives: 'Kristi is energized by learning, building knowledge, and thinking strategically about complex challenges. Learner and Input mean she\'s constantly gathering and growing, and Strategic means that knowledge gets organized into something useful rather than just collected.',
+    mind: 'Her mind moves from information to insight. She collects context broadly, finds the patterns that matter, and builds a clear picture of what to do with it. Discipline keeps her from being distracted by irrelevant information, and Empathy grounds her thinking in the people affected.',
+    brings: 'Kristi brings well-organized strategic thinking informed by genuine curiosity and depth. She does her homework, spots patterns others miss, and has the empathy to make sure her strategies account for how people will actually respond.',
+    watch: 'Learner and Discipline together can create a tension between wanting to know more before acting and the need to move. She may gather more context than is actually necessary, especially on decisions where speed matters.',
+    work_with: 'Give Kristi access to information early and let her process. She works best when she has time to think before deciding. When she\'s done the work, trust her analysis — she\'s rarely underprepared.'
+  },
+  'Lauren Gerbick': {
+    drives: 'Lauren is energized by having a clear direction and moving on it without hesitation. Strategic, Activator, and Adaptability together create someone who thinks clearly, acts quickly, and adjusts fluidly — a powerful combination for fast-moving environments.',
+    mind: 'She identifies the best path and moves. Strategic keeps her from acting randomly, Activator keeps her from overthinking, and Adaptability means she handles obstacles without drama. She thinks on her feet and trusts her instincts.',
+    brings: 'Lauren brings decisive, adaptive execution. She\'s the person who can take a strategy from concept to in-motion faster than most, and who adjusts when things shift without losing momentum. Relator means she brings people along rather than just charging ahead.',
+    watch: 'Activator and Adaptability together can mean moving so quickly that others lose the thread. Lauren may underestimate how much context people need before they can follow her lead.',
+    work_with: 'Keep up with her pace — she respects people who move. When you need her to slow down and explain her thinking, frame it as helping others catch up rather than second-guessing her direction.'
+  },
+  'Samantha Marion': {
+    drives: 'Samantha is energized by genuine connection, helping people through difficulty, and investing in growth. Relator and Empathy mean she builds real trust, not just rapport, and Restorative means she\'s especially energized when she can help someone work through a challenge.',
+    mind: 'Her mind moves through people. She reads emotional undercurrents naturally, understands what someone actually needs versus what they\'re saying, and knows intuitively when something is off. Positivity and Learner keep her oriented toward possibility even when things are hard.',
+    brings: 'Samantha brings deep trust, emotional attunement, and a problem-solving energy that feels like support rather than pressure. People open up to her, which means she often knows what\'s really happening on the team before anyone else does.',
+    watch: 'Relator and Empathy together can make difficult conversations especially hard — not because she avoids them, but because she feels them deeply. She may carry others\' stress and difficulty more than is healthy for her.',
+    work_with: 'Check in on her as a person, not just a colleague. She gives a lot of herself and may not ask for support. When you need her to make a hard call that affects someone she\'s close to, give her space to process it before deciding.'
+  },
+  'Ashley Pires': {
+    drives: 'Ashley is energized by raising the standard, keeping things fair, and building systems that hold. Maximizer, Consistency, and Harmony together create someone who pushes for excellence while making sure no one gets left behind or treated differently.',
+    mind: 'She evaluates through the lens of quality and fairness simultaneously. Maximizer asks \'could this be better?\' Consistency asks \'is this applied equally?\' Harmony asks \'is everyone okay with this?\' Deliberative makes sure she doesn\'t move until she\'s confident the answer to all three is yes.',
+    brings: 'Ashley brings a principled commitment to excellence and fairness. She raises the bar without creating winners and losers — which makes her trusted in environments where standards matter and people need to feel the playing field is level.',
+    watch: 'Deliberative and Consistency together can slow decision-making when speed is needed. Ashley may be reluctant to move forward until she\'s confident the process is sound, even when a faster, imperfect answer would serve better.',
+    work_with: 'Be consistent with her — she notices when rules don\'t apply equally and it erodes her trust. When you need her to move quickly, acknowledge the tradeoff directly; she\'ll move faster when she knows the compromise is intentional rather than careless.'
+  },
+  'Sarah Munoz': {
+    drives: 'Sarah is energized by connection, communication, and building bridges between people. Woo, Communication, and Empathy together create someone who opens relationships easily, tells stories that land, and genuinely understands the person she\'s talking to.',
+    mind: 'Her mind works through the audience. She naturally reads who she\'s talking to and adjusts her communication accordingly. Input gives her the substance to back up her storytelling, and Consistency means people know what to expect from her over time.',
+    brings: 'Sarah brings the ability to connect authentically with almost anyone and communicate in ways that genuinely resonate. She\'s especially valuable in external relationships, new team introductions, and any situation where trust needs to be built quickly.',
+    watch: 'Woo and Communication together can mean conversations move quickly on the surface. Sarah may bond well in early interactions while needing to be more intentional about building the deeper trust that sustains relationships over time.',
+    work_with: 'Give her room to connect and communicate — don\'t constrain her to scripted interactions. She does her best work when she has genuine latitude to build the relationship her way.'
+  },
+  'Kevin Blake': {
+    drives: 'Kevin is energized by fairness, clear communication, and genuine care for people. Consistency, Communication, and Empathy together create someone who holds the group to equal standards while making sure everyone feels heard and understood.',
+    mind: 'He processes through both logic and feeling simultaneously. Consistency provides the framework for what\'s fair. Communication helps him translate that framework into something others can actually hear. Empathy makes sure he\'s reading the room correctly before he speaks.',
+    brings: 'Kevin brings principled, empathetic communication that people trust. He\'s the kind of colleague who tells you something difficult in a way that you can actually receive it, and who holds himself to the same standards he expects from others.',
+    watch: 'Empathy and Consistency together can create tension when the right thing and the fair thing feel like they\'re in conflict. Kevin may struggle when doing what\'s consistent feels like it requires ignoring what someone clearly needs.',
+    work_with: 'Be straightforward with Kevin — he respects honesty and can handle difficult conversations when they\'re delivered with care. Don\'t assume he\'s fine; check in. He gives a lot to others and may not show when he\'s stretched.'
+  },
+  'Brenda Berlanger': {
+    drives: 'Brenda is energized by solving real problems with rigorous thinking and a clear view of where things are headed. Restorative, Strategic, and Futuristic together create someone who diagnoses what\'s broken, charts a clear path, and keeps one eye on the long term while fixing what\'s in front of her.',
+    mind: 'She thinks in systems. Restorative finds the root of the problem, Strategic finds the best solution, Futuristic makes sure that solution holds up over time. Individualization makes sure she accounts for the different people involved, not just the abstract process.',
+    brings: 'Brenda brings systems-level problem solving with genuine attentiveness to the individuals inside those systems. She\'s not just fixing processes — she\'s thinking about how they work for the actual people who use them.',
+    watch: 'Strategic and Futuristic together can make it hard to stay present with immediate, messy problems that don\'t have clean solutions. Brenda may be more comfortable in the planning phase than in the ambiguous middle of a difficult situation.',
+    work_with: 'Give her problems with real complexity — she\'s energized by challenges that require systems thinking. When you need her to slow down and deal with immediate messiness, connect it to the longer-term outcome she cares about.'
+  },
+  'Lindsey Forey': {
+    drives: 'Lindsey is energized by being responsive to what people and situations actually need. Adaptability, Empathy, and Responsibility together create someone who stays flexible without dropping the ball — she adjusts to what\'s needed and then owns it fully.',
+    mind: 'She processes in the moment. Adaptability means she\'s not locked into a plan; Empathy means she\'s reading the people around her continuously; and Responsibility means that once she understands what\'s needed, she commits completely.',
+    brings: 'Lindsey brings calm, reliable responsiveness. She doesn\'t panic when plans change because she\'s already oriented toward what\'s actually happening rather than what was supposed to happen. People trust her because she delivers even in unpredictable circumstances.',
+    watch: 'Adaptability and Responsibility together can mean Lindsey absorbs a lot without complaining. She may take on others\' problems and changing priorities without asking for the support or clarity she needs.',
+    work_with: 'Be explicit about priorities — Lindsey is willing to adapt to almost anything, which means she needs you to be clear about what actually matters most. Check in on her capacity, because she\'ll rarely tell you she\'s overloaded.'
+  },
+  'Jeff Nonte': {
+    drives: 'Jeff is energized by winning, by the long view, and by the people he competes alongside. Competition, Futuristic, and Relator together create someone who is deeply motivated by measurable results but genuinely invested in the relationships that make those results possible.',
+    mind: 'He thinks in trajectories — where is this headed, and are we winning? Futuristic paints the picture, Strategic maps the route, and Competition keeps score. Relator makes sure the people running alongside him are actually with him, not just around him.',
+    brings: 'Jeff brings competitive drive grounded in genuine relationship. He\'s energized by high-stakes environments and performs at his best when there\'s a clear goal and people he trusts around him. He makes the people he works with want to rise to the occasion.',
+    watch: 'Competition and Relator can create tension when winning requires making a decision that affects someone he\'s close to. Jeff may find those calls harder than they need to be, and may avoid them longer than is useful.',
+    work_with: 'Make goals visible and measurable — Jeff is energized by a clear scoreboard. Pair him with people he can trust; he works differently in high-trust relationships and will invest more when he genuinely respects the people around him.'
+  },
+  'Danny Jimenez': {
+    drives: 'Danny is energized by making progress, honoring commitments, and getting better over time. Achiever, Responsibility, and Learner together create someone who works hard, keeps his word, and continuously raises his own standard.',
+    mind: 'His mind is goal-oriented and accountable. Achiever wants to finish. Responsibility won\'t let him walk away from what he\'s committed to. Learner keeps him asking how to do it better next time. Belief provides the values that govern how he operates throughout.',
+    brings: 'Danny brings reliable, principled output. He does what he says he will, consistently, and comes back more capable each time. He\'s the colleague you never have to chase and never have to clean up after.',
+    watch: 'Achiever and Responsibility together can mean Danny takes on too much without asking for help. He may push through when slowing down or delegating would actually serve the work better.',
+    work_with: 'Trust him with real responsibility — he rises to it. If you notice he\'s stretched, name it directly; he won\'t volunteer that information on his own. And acknowledge his follow-through specifically — he notices when consistency is recognized.'
+  },
+  'Leif Kristensen': {
+    drives: 'Leif is energized by connection, warmth, and making people feel genuinely welcome. Woo, Empathy, and Communication together create someone who opens doors, reads the room, and finds exactly the right words for the moment.',
+    mind: 'His mind moves through people. He reads emotional landscapes naturally and responds with genuine warmth and precision. Positivity and Harmony keep him oriented toward the best version of any interaction, and Empathy makes sure that orientation is real rather than performed.',
+    brings: 'Leif brings the ability to make anyone feel seen and at ease immediately. He\'s especially powerful in first impressions, difficult conversations that need softening, and any situation where the relationship needs to come before the task.',
+    watch: 'Woo and Harmony together can mean avoiding difficult truths in order to preserve the warmth of the connection. Leif may find it hard to deliver critical feedback or hold a hard line when it risks the relationship.',
+    work_with: 'Use him in situations where warmth and connection open the door. When he needs to deliver difficult news, help him see it as an act of care — that framing makes it much easier for him to move through it.'
+  },
+  'Todd Norman': {
+    drives: 'Todd is energized by helping people grow, keeping things running smoothly, and responding to whatever the moment needs. Developer, Harmony, and Adaptability together create someone who invests in others, reduces friction, and stays calm when things get complicated.',
+    mind: 'He processes through people and situations simultaneously. Developer sees potential. Harmony spots friction. Adaptability responds to what\'s actually happening rather than what was planned. Empathy and Includer make sure no one falls through the cracks.',
+    brings: 'Todd brings a steady, people-centered presence that keeps teams functional and individuals growing. He\'s especially valuable in environments with a lot of change or conflict — he absorbs turbulence without amplifying it.',
+    watch: 'Harmony and Adaptability together can mean Todd absorbs a lot of disruption without asking for what he needs. He may keep things smooth at a personal cost that isn\'t visible to others.',
+    work_with: 'Check in on him as a person — he\'s often managing more than he shows. Give him room to invest in people\'s development; that\'s when he\'s most energized. And acknowledge the stability he creates, because it\'s easy to take for granted.'
+  },
+  'Ryan Lower': {
+    drives: 'Ryan is energized by connection, storytelling, and making sure everyone has a voice. Communication, Woo, and Includer together create someone who brings people in, tells compelling stories, and makes sure the group is bigger than it was before he arrived.',
+    mind: 'His mind works through narrative and audience. He naturally thinks about who\'s listening and what they need to hear. Context gives him the historical grounding to make his stories credible, and Developer means he\'s paying attention to who\'s growing in the process.',
+    brings: 'Ryan brings the ability to connect broadly and communicate in ways that stick. He\'s especially powerful in situations that need momentum — launching something new, rallying a group, or making sure the room feels like a team rather than a collection of individuals.',
+    watch: 'Woo and Communication together can mean relationships stay wide rather than deep. Ryan may connect with many people effectively without investing enough in the sustained trust that comes from deeper relationship.',
+    work_with: 'Give him an audience and a purpose — that\'s when he\'s at his best. Don\'t constrain him to internal-only work when he has a natural gift for external presence. And push him occasionally to go deeper in key relationships rather than broader.'
+  },
+  'Chris Russo': {
+    drives: 'Chris is energized by achieving, competing, and doing it in a way that matters. Achiever, Competition, and Significance together create someone who isn\'t just driven to deliver — he\'s driven to deliver in ways that have real impact and are recognized as excellent.',
+    mind: 'He thinks through goals and performance. Strategic maps the best path, Communication makes sure people can follow his thinking, and Achiever keeps him moving toward the finish line. Competition makes every goal a little more real when the stakes are visible.',
+    brings: 'Chris brings high-output strategic execution with strong communication. He explains his thinking clearly, works hard toward goals, and performs at his best when the work feels meaningful and visible. He raises the energy and the standard around him.',
+    watch: 'Achiever and Competition together can mean it\'s hard to slow down when slowing down is the right call. Chris may push through when pausing would serve both him and the work better, especially when he\'s behind or under pressure.',
+    work_with: 'Make goals clear and visible — Chris is energized by a scoreboard. Acknowledge excellent work specifically; vague praise doesn\'t land the way concrete recognition does. And create space for him to communicate his strategy, not just his results.'
+  },
+  'Amber Botts': {
+    drives: 'Amber is energized by connecting with people, bringing energy to a room, and making sure conversations have real substance. Woo, Positivity, and Communication together create someone who draws people in warmly and keeps them engaged with genuine warmth and knowledge.',
+    mind: 'Her mind moves through people and energy. She reads what a room needs and responds naturally — whether that\'s enthusiasm, a story, or a moment of warmth. Input makes sure she has real knowledge to back up her natural presence, and Arranger means she\'s also thinking about how everything fits together.',
+    brings: 'Amber brings magnetic, substantive warmth. She opens relationships easily, keeps energy high, and brings enough depth to make those connections meaningful. She\'s especially powerful in external-facing situations and in any moment where the team needs a lift.',
+    watch: 'Woo and Positivity together can mean difficult truths get softened or delayed. Amber may struggle to deliver news that disrupts the warmth of a connection, even when it needs to be said.',
+    work_with: 'Use her in situations that benefit from energy and connection. When you need her to be the bearer of difficult news, help her frame it as care — she delivers hard things much better when she can do it from that place.'
+  },
+  'Laura Ballard': {
+    drives: 'Laura is energized by starting things, competing, and making sure the output is excellent. Activator, Competition, and Maximizer together create someone who doesn\'t just want to get things moving — she wants to win and wants the work to be genuinely outstanding.',
+    mind: 'Her mind moves from possibility to action to excellence. Activator starts it, Competition makes it matter, Maximizer raises the bar, and Arranger makes sure the right pieces are in the right place. Adaptability keeps her from getting stuck when things don\'t go as planned.',
+    brings: 'Laura brings launching energy combined with a push for excellence. She\'s especially valuable at the beginning of a project — she creates momentum that others can build on, and she\'ll keep pushing until the output is something worth being proud of.',
+    watch: 'Activator and Competition together can mean moving before everyone is aligned. Laura may charge ahead when the team needs a moment to get on the same page, and may find it harder than others to slow down once she\'s in motion.',
+    work_with: 'Give her clear goals with real stakes — she\'s energized when there\'s something to win. Build in alignment checkpoints early so the momentum she creates is going in the right direction. Acknowledge specific results; she keeps score and notices when good work isn\'t seen.'
+  },
+  'Erica Roudebush': {
+    drives: 'Erica is energized by connecting warmly, raising the bar, and genuinely understanding the people around her. Woo, Maximizer, and Empathy together create someone who opens doors easily, pushes for excellence, and does it all with real attentiveness to the person in front of her.',
+    mind: 'Her mind works through both the person and the potential. Woo opens the relationship, Empathy deepens it, and Maximizer asks what this person or situation could become at its best. Strategic provides the direction to make it happen.',
+    brings: 'Erica brings high emotional intelligence combined with a drive for excellence. She\'s rare in that she genuinely cares about the people she works with and holds them to a high standard at the same time — which earns real trust.',
+    watch: 'Woo and Maximizer can pull in different directions — one expands broadly, the other wants to go deep and excellent. Erica may spread herself across too many relationships to invest in each one at the level Maximizer wants.',
+    work_with: 'Give her space to build the relationship before diving into the work — she does both better when the connection comes first. When you need her to focus, help her narrow down which relationships and projects deserve the full Maximizer treatment.'
+  },
+  'Amber Chesterfield': {
+    drives: 'Amber is energized by understanding people, creating harmony, and making sure everyone belongs. Empathy, Adaptability, and Includer together create someone who reads emotional dynamics naturally, stays flexible, and makes sure no one gets left out of the picture.',
+    mind: 'Her mind is continuously scanning the room — who\'s feeling what, who needs what, what\'s creating friction and what would reduce it. Harmony and Relator together mean she\'s oriented toward both group cohesion and individual connection, not just one or the other.',
+    brings: 'Amber brings a deeply welcoming, emotionally attuned presence that makes people feel safe and included. She\'s especially valuable when a team is forming, when there\'s tension to navigate, or when someone needs to feel genuinely seen before they can engage.',
+    watch: 'Empathy and Harmony together can mean Amber absorbs the emotional weight of a group without anyone noticing. She may smooth things over at a personal cost that isn\'t visible, and may avoid necessary conflict to preserve the warmth of connection.',
+    work_with: 'Check in on her — she gives a lot and may not ask for what she needs. When you need her to hold a hard line or deliver difficult feedback, help her see it as an act of inclusion rather than exclusion; that framing makes it much easier for her.'
+  },
+  'Marvy Alvarez': {
+    drives: 'Marvy is energized by solving real problems, understanding them deeply, and owning the outcome. Restorative, Learner, and Responsibility together create someone who doesn\'t just identify what\'s broken — she studies it, commits to fixing it, and follows through.',
+    mind: 'Her mind moves through diagnosis and understanding. Restorative finds the problem, Learner builds the knowledge to solve it, and Responsibility drives the follow-through. Intellection means she thinks carefully and thoroughly before acting.',
+    brings: 'Marvy brings principled, thorough problem-solving. She won\'t take shortcuts, she\'ll build the knowledge base she needs, and she\'ll own the result. People know they can hand her a difficult problem and not have to worry about it.',
+    watch: 'Intellection and Responsibility together can mean Marvy takes longer than the situation requires to feel ready to act. She may gather more context than is necessary and hold herself to a standard that creates unnecessary pressure.',
+    work_with: 'Give her real problems with real ownership — that\'s when she\'s most energized. When speed is needed, acknowledge the constraint directly; she\'ll move faster when she knows a faster answer is genuinely acceptable.'
+  },
+  'Hummy Truh': {
+    drives: 'Hummy is energized by organizing people and resources, honoring commitments, and thinking strategically about how everything fits together. Arranger, Responsibility, and Strategic together create someone who sees how the pieces connect and makes sure they\'re in the right place.',
+    mind: 'Her mind works through configuration. Strategic finds the best approach, Arranger figures out how to organize people and resources to execute it, and Responsibility makes sure nothing falls through the cracks. Learner keeps her improving the system over time.',
+    brings: 'Hummy brings the ability to take a complex situation, find the right configuration of people and resources, and make sure it gets executed. She\'s especially valuable in multi-workstream environments where coordination is the difference between success and chaos.',
+    watch: 'Arranger and Responsibility together can create a tendency to over-involve herself in the execution rather than delegating. She may hold on to tasks because she trusts herself to do them correctly, even when handing them off would serve the work better.',
+    work_with: 'Give her room to reconfigure when things aren\'t working — she often sees a better arrangement before others do. Be clear about what you\'re accountable for versus what you\'re asking her to own; she\'ll pick up anything that seems uncovered.'
+  },
+  'Katie Celmins': {
+    drives: 'Katie is energized by making sure everyone has a place, that standards are applied fairly, and that the group feels like a cohesive whole. Includer, Consistency, and Harmony together create someone who works actively to build a team where everyone belongs and the rules are clear.',
+    mind: 'Her mind scans for gaps — who\'s missing from the conversation, where the process is inconsistent, where friction is building. Developer means she\'s also always thinking about how the people around her are growing, not just whether they\'re included.',
+    brings: 'Katie brings genuine inclusivity grounded in fairness. She doesn\'t just invite people in — she makes sure the environment is consistently welcoming and fair for everyone once they\'re there. Teams with Katie feel safer and more cohesive.',
+    watch: 'Harmony and Consistency together can make it hard to move quickly or accept process variation. Katie may slow down decisions when she\'s concerned about consistency or group cohesion, even when speed serves better.',
+    work_with: 'Be transparent about how decisions get made — she watches for fairness and will lose trust when things feel inconsistent. When you need her to accept variation, explain the reasoning; she can work with exceptions when she understands why they exist.'
+  },
+  'Dawn Dilts': {
+    drives: 'Dawn is energized by diagnosing what\'s wrong, gathering the information to understand it, and taking decisive action to fix it. Restorative, Input, and Command together create someone who identifies problems, builds understanding, and moves with clarity.',
+    mind: 'Her mind moves from problem to knowledge to decision. Restorative finds the issue, Input builds the understanding, Command makes the call. Responsibility means she owns the outcome, and Developer keeps her thinking about the people involved, not just the process.',
+    brings: 'Dawn brings decisive, informed problem-solving. She gathers what she needs to understand a situation, then acts with clarity. She\'s especially valuable in moments of ambiguity or dysfunction, where others may hesitate and she can provide clear direction.',
+    watch: 'Command and Restorative together can mean Dawn moves to solutions before others feel heard. She may diagnose and decide faster than the people involved are ready for, which can create resistance even when her answer is right.',
+    work_with: 'Let her take the lead on problems that need decisive resolution — that\'s when she\'s at her best. When you need her to slow down and bring others along before acting, frame it as making the solution more durable rather than questioning her judgment.'
+  },
+  'Julie Phinney': {
+    drives: 'Julie is energized by seeing each person as a unique individual, understanding how they feel, and making sure the work and the relationships are built around who people actually are. Individualization, Empathy, and Input together create someone who customizes her approach with real knowledge behind it.',
+    mind: 'Her mind works through the individual. She builds detailed pictures of the people around her — what makes them tick, what they need, what they bring. Strategic means she\'s also thinking about how those individuals fit into a larger picture.',
+    brings: 'Julie brings a highly personalized, emotionally intelligent approach to relationships and work design. She\'s the person who knows exactly how to reach each person on the team — and that knowledge makes her genuinely effective in coaching, management, and cross-functional collaboration.',
+    watch: 'Individualization and Empathy together can make it hard to make group-wide decisions that don\'t account for every person\'s situation. Julie may struggle with one-size-fits-all approaches even when they\'re practical and necessary.',
+    work_with: 'Give her space to customize her approach — she works better when she can tailor rather than template. When you need her to apply a consistent process, help her see the consistency as a foundation she can still personalize within.'
+  },
+  'Kiyomi Covit': {
+    drives: 'Kiyomi is energized by learning, building knowledge, and converting that knowledge into real results. Learner, Input, and Achiever together create someone who is constantly growing and constantly delivering — a combination that compounds over time.',
+    mind: 'Her mind collects, processes, and applies. Learner seeks new understanding, Input curates the best of it, Intellection processes it deeply, and Achiever converts it into output. Analytical keeps the reasoning rigorous throughout.',
+    brings: 'Kiyomi brings continuously improving, well-grounded execution. Her work gets better over time because she\'s always learning, and it\'s credible because she does the intellectual work behind it. She\'s the kind of person whose thinking you come to trust.',
+    watch: 'Learner and Intellection together can mean spending more time in the thinking phase than the work requires. Kiyomi may keep processing when a good-enough answer is already available, especially on decisions that don\'t have a clear right answer.',
+    work_with: 'Give her access to good information and let her build her understanding before deciding. She works best when she has time to think, and her output is noticeably stronger for it. Acknowledge the depth she brings — it\'s easy to take rigorous thinking for granted.'
+  },
+  'Melody Baker': {
+    drives: 'Melody is energized by developing people, organizing work, and doing it all with genuine care. Developer, Arranger, and Empathy together create someone who invests in who people could become while also making sure the work is structured to support that growth.',
+    mind: 'Her mind works through people and systems simultaneously. Developer sees potential, Arranger figures out how to structure things so that potential can be realized, and Empathy makes sure the approach is right for the individual. Relator and Responsibility mean she follows through on those investments.',
+    brings: 'Melody brings the rare combination of people development and operational organization. She doesn\'t just coach — she builds the environment in which people can actually grow. Teams around her tend to become more capable over time.',
+    watch: 'Developer and Empathy together can mean over-investing in people who aren\'t ready to receive the investment. Melody may keep believing in someone longer than the situation warrants, which can cost her time and energy.',
+    work_with: 'Let her invest in the people around her — that\'s where she\'s most energized and most effective. When she\'s over-extended by carrying others\' development, help her prioritize which relationships deserve the deepest investment right now.'
+  },
+  'Shamaine Davis': {
+    drives: 'Shamaine is energized by solving problems with creative thinking, deep relationship, and genuine care for people\'s growth. Restorative, Relator, and Ideation together create someone who diagnoses what\'s broken, connects authentically with the people involved, and brings fresh thinking to what a solution could look like.',
+    mind: 'Her mind moves between diagnosis, connection, and possibility. Restorative identifies the problem, Relator understands the people in it, Ideation generates options, Developer sees what people could become through the process of working through it. Individualization makes sure the solution fits the specific person, not just the abstract problem.',
+    brings: 'Shamaine brings a uniquely human approach to problem-solving. She doesn\'t just fix things — she builds relationships through the process of fixing them, and uses the challenge as an opportunity to develop the people involved.',
+    watch: 'Relator and Developer together can mean Shamaine stays in difficult situations longer than is healthy, because she\'s invested in the person and believes in their potential. She may carry more than she should out of loyalty and belief.',
+    work_with: 'Give her problems that involve people, not just processes — that\'s where she does her best work. Check in on her capacity, because her investment in others can mask how much she\'s personally carrying. And acknowledge the relationship work she does, which is often invisible.'
+  },
+};
+
+function analyzeSinglePerson(){
   if(selectedPeople.length !== 1) return;
   const p = byName(selectedPeople[0]);
   if(!p) return;
-  const content = document.getElementById('analysis-content');
+  const el = document.getElementById('analysis-content');
   document.getElementById('analysis-empty').style.display = 'none';
-  content.style.display = 'block';
-
-  // Show the profile card + a loading state for the deep analysis
-  const c = dc(p.domain);
-  const cardId = p.name.replace(/\s/g,'-').replace(/'/g,'');
-  content.innerHTML = renderSingleProfile(p.name) +
-    `<div id="deep-analysis-section" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
-      <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:600;margin-bottom:10px;">Deep Analysis</div>
-      <div id="deep-analysis-content" style="font-size:0.85rem;color:var(--text);line-height:1.7;">
-        <div style="display:flex;align-items:center;gap:8px;color:var(--muted);font-size:0.82rem;">
-          <div style="width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--text);border-radius:50%;animation:spin 0.8s linear infinite;"></div>
-          Analyzing ${p.name}'s strengths...
-        </div>
-      </div>
+  el.style.display = 'block';
+  const a = DEEP_ANALYSES[p.name];
+  let deepHtml = '';
+  if(a){
+    const fname = p.name.split(' ')[0];
+    const sections = [
+      {label: `What drives ${fname}`, text: a.drives},
+      {label: 'How their mind works', text: a.mind},
+      {label: 'What they bring to a team', text: a.brings},
+      {label: 'What to watch for', text: a.watch},
+      {label: `How to work best with ${fname}`, text: a.work_with},
+    ];
+    deepHtml = sections.map(s=>`<div style="margin-bottom:14px;">
+      <div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:600;margin-bottom:4px;">${s.label}</div>
+      <div style="font-size:0.85rem;line-height:1.65;color:var(--text);">${s.text}</div>
+    </div>`).join('');
+  }
+  el.innerHTML = renderSingleProfile(p.name) +
+    `<div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+      <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:600;margin-bottom:12px;">Deep Analysis</div>
+      ${deepHtml}
     </div>`;
-
-  // Add spin animation if not already there
-  if(!document.getElementById('spin-style')){
-    const style = document.createElement('style');
-    style.id = 'spin-style';
-    style.textContent = '@keyframes spin{to{transform:rotate(360deg)}}';
-    document.head.appendChild(style);
-  }
-
-  // Build the prompt
-  const bb = p.top10.map(s => {
-    const data = STRENGTHS_BB[s];
-    return data ? `${s} (Balcony: ${data.balcony}; Basement: ${data.basement})` : s;
-  }).join('\n');
-
-  const prompt = `You are a CliftonStrengths expert analyzing a real person on a team. Be specific, insightful, and genuinely useful — not generic. Every sentence should feel like it could only apply to this person.
-
-Person: ${p.name}
-Role: ${p.role}, ${p.subgroup}
-Top 10 CliftonStrengths (in order): ${p.top10.join(', ')}
-Domain: ${p.domain}
-
-Balcony and basement for each strength:
-${bb}
-
-Write a deep, personalized analysis in exactly this structure — use these exact section headers with nothing before them:
-
-**What drives ${p.name.split(' ')[0]}**
-2-3 sentences about what energizes and motivates this person based on their specific top 3-4 strengths working together. Be concrete, not generic.
-
-**How their mind works**
-2-3 sentences about their thinking and problem-solving style — how their specific combination of strengths shapes their approach. Reference actual strengths by name.
-
-**What they bring to a team**
-2-3 sentences about their most distinctive contributions — what this person specifically adds that others may not. Be precise.
-
-**What to watch for**
-2 sentences about where their strengths can work against them under pressure or overuse. Softened language — not critical, just honest. Reference their actual strengths.
-
-**How to work best with ${p.name.split(' ')[0]}**
-2-3 sentences of specific, actionable advice for teammates or managers working with this person. Based on their actual strengths.
-
-Keep each section tight. No filler. No phrases that could apply to anyone else.`;
-
-  try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        messages: [{ role: 'user', content: prompt }]
-      })
-    });
-    const data = await response.json();
-    const text = data.content?.[0]?.text || 'Unable to generate analysis.';
-
-    // Format the markdown into HTML
-    const formatted = text
-      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-      .split('\n\n')
-      .map(para => {
-        if(para.startsWith('<strong>')) {
-          const parts = para.split('\n');
-          const header = parts[0];
-          const body = parts.slice(1).join(' ').trim();
-          return `<div style="margin-bottom:14px;">
-            <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:600;margin-bottom:4px;">${header}</div>
-            <div>${body}</div>
-          </div>`;
-        }
-        return `<p style="margin-bottom:10px;">${para}</p>`;
-      }).join('');
-
-    document.getElementById('deep-analysis-content').innerHTML = formatted;
-  } catch(err) {
-    document.getElementById('deep-analysis-content').innerHTML =
-      `<div style="color:var(--muted);font-size:0.82rem;">Unable to generate analysis right now. Please try again.</div>`;
-  }
 }
+
 
 // ── SINGLE PROFILE (compact) ──
 function renderSingleProfile(name){
