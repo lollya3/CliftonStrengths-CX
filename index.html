@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -236,6 +237,7 @@ main{padding:16px;max-width:1400px;margin:0 auto;}
   <div class="explorer-controls">
     <select class="group-select" id="group-filter" onchange="applyFilter()">
       <option value="all">All CX — 32 members</option>
+      <option value="Executive">Executive</option>
       <option value="Leadership">CX Leadership</option>
       <option value="Sales">Sales</option>
       <option value="CSS">Customer Support</option>
@@ -315,7 +317,8 @@ main{padding:16px;max-width:1400px;margin:0 auto;}
 <script>
 // ── DATA ──
 const PEOPLE = [
-  {name:'John Webster',     role:'VP of Sales & Marketing',              group:'Leadership', subgroup:'Leadership',   manager:null,              domain:'Strategic Thinking',    top10:['Relator','Learner','Futuristic','Strategic','Intellection','Ideation','Analytical','Belief','Responsibility','Input']},
+  {name:'Tad Calahan',     role:'President',                             group:'Executive',  subgroup:'Executive',    manager:null,              domain:'Executing',             top10:['Restorative','Relator','Futuristic','Consistency','Achiever','Responsibility','Arranger','Self-Assurance','Analytical','Harmony']},
+  {name:'John Webster',     role:'VP of Sales & Marketing',              group:'Executive',  subgroup:'Executive',    manager:'Tad Calahan',     domain:'Strategic Thinking',    top10:['Relator','Learner','Futuristic','Strategic','Intellection','Ideation','Analytical','Belief','Responsibility','Input']},
   {name:'Robert Hinsch',    role:'VP of Business Development',           group:'Leadership', subgroup:'Leadership',   manager:'John Webster',    domain:'Executing',             top10:['Responsibility','Analytical','Ideation','Relator','Achiever','Arranger','Focus','Command','Learner','Significance']},
   {name:'Lori Atone',       role:'Sales Training & Development Manager',         group:'LD',         subgroup:'L&D',          manager:'John Webster',    domain:'Strategic Thinking',    top10:['Ideation','Learner','Activator','Strategic','Futuristic','Maximizer','Individualization','Input','Arranger','Positivity']},
   {name:'Desiree Friedman', role:'Marketing Director',                   group:'Marketing',  subgroup:'Marketing',    manager:'John Webster',    domain:'Strategic Thinking',    top10:['Input','Strategic','Achiever','Discipline','Learner','Arranger','Activator','Relator','Communication','Focus']},
@@ -441,6 +444,8 @@ function applyFilter(){
   if(currentFilter !== 'all'){
     const LEADERSHIP_NAMES = ['John Webster','Robert Hinsch','Samantha Marion','Jeff Nonte','Desiree Friedman','Lori Atone'];
     selectedPeople = PEOPLE.filter(p=>{
+      if(currentFilter==='Executive') return p.group==='Executive';
+      if(currentFilter==='Executive') return p.group==='Executive';
       if(currentFilter==='Leadership') return LEADERSHIP_NAMES.includes(p.name);
       if(currentFilter==='Marketing') return p.group==='Marketing';
       if(currentFilter==='Sales') return p.group==='Sales';
@@ -468,7 +473,8 @@ function personVisible(p){
   const q = searchEl ? searchEl.value.toLowerCase().trim() : '';
   if(q && !p.name.toLowerCase().includes(q)) return false;
   if(currentFilter==='all') return true;
-  if(currentFilter==='Leadership') return LEADERSHIP_NAMES.includes(p.name);
+  if(currentFilter==='Executive') return p.group==='Executive';
+      if(currentFilter==='Leadership') return LEADERSHIP_NAMES.includes(p.name);
   if(currentFilter==='Marketing') return p.group==='Marketing';
   if(currentFilter==='Sales') return p.group==='Sales';
   if(currentFilter==='CSS') return p.group==='CSS';
@@ -564,6 +570,13 @@ function analyzeGroup(){
 }
 
 const DEEP_ANALYSES = {
+  'Tad Calahan': {
+    drives: 'Tad is energized by building the right things, with the right people, for the long term. Restorative and Achiever mean he\'s drawn to what\'s not working and driven to fix it — not just patch it. Futuristic keeps that drive oriented toward something worth building, and Relator means he does it alongside people he genuinely trusts.',
+    mind: 'He processes through both systems and relationships simultaneously. Restorative diagnoses the problem, Analytical validates the diagnosis, and Self-Assurance gives him the confidence to act on his conclusions without needing external validation. Futuristic keeps him asking whether the solution holds up over time, not just today.',
+    brings: 'Tad brings steady, principled leadership with a clear view of where things are headed. He\'s not reactive — he diagnoses deeply, decides confidently, and follows through consistently. The combination of Futuristic and Achiever means he can hold a long-term vision while also delivering near-term results.',
+    watch: 'Self-Assurance and Restorative together can mean Tad arrives at conclusions quickly and holds them firmly — which is a strength in decisive moments but can make it harder for others to influence his thinking once he\'s committed. Consistency may also create resistance to departing from what\'s worked, even when the situation has genuinely changed.',
+    work_with: 'Be direct and come with evidence — Tad respects analytical rigor and doesn\'t need ideas wrapped in polish. Build real relationship with him before expecting real influence; Relator means trust is earned through genuine connection, not just professional competence. And when you disagree, say so clearly — he respects directness far more than deference.'
+  },
   'John Webster': {
     drives: 'John is energized by deep relationships, continuous learning, and thinking ahead. The combination of Relator and Learner means he invests seriously in the people around him while always looking to grow — and Futuristic keeps that growth oriented toward what\'s possible rather than what\'s comfortable.',
     mind: 'His mind works through connection and pattern-recognition over time. Relator and Intellection mean he processes ideas deeply and personally — he\'s not just thinking about the problem, he\'s thinking about the people affected by it. Strategic then helps him translate that depth into a clear direction.',
@@ -990,6 +1003,8 @@ const STRENGTH_VERB = {
 // Combination summaries — what top-3 combos mean together
 // Pattern: look up specific combos, fall back to building from STRENGTH_VERB
 const COMBO_SUMMARY = {
+  // Tad: Restorative+Relator+Futuristic
+    'Restorative+Relator+Futuristic':    'Diagnoses what\'s broken, builds deep trust with the people who can fix it, and keeps one eye on where things are headed. A rare combination of problem-solving instinct, authentic relationship, and long-term vision.',
   // Lori: Ideation+Learner+Activator
   'Ideation+Learner+Activator':     'Naturally wired to generate ideas and get them moving. The combination of creative thinking, continuous learning, and a bias toward action means they rarely let good ideas sit.',
   'Ideation+Activator+Learner':     'Naturally wired to generate ideas and get them moving. The combination of creative thinking, a bias toward action, and continuous learning means they rarely let good ideas sit.',
@@ -1216,7 +1231,27 @@ function renderMultiComparison(names){
       : `No shared strengths in their top 10 — this is a high-complementarity pairing. They'll likely approach problems very differently, which is both an asset and something to navigate.`;
 
     const complementInsight = aOnly.length && bOnly.length
-      ? `${pA.name}'s <strong>${aOnly.join(' and ')}</strong> cover ground that ${pB.name.split(' ')[0]} doesn\'t naturally bring, and ${pB.name.split(' ')[0]}'s <strong>${bOnly.join(' and ')}</strong> fill gaps in return.`
+      ? (()=>{
+          const a0=aOnly[0],a1=aOnly[1],b0=bOnly[0],b1=bOnly[1];
+          const nA=pA.name.split(' ')[0], nB=pB.name.split(' ')[0];
+          const aStr = a1?`${a0} and ${a1}`:a0;
+          const bStr = b1?`${b0} and ${b1}`:b0;
+          const execS=['Achiever','Discipline','Focus','Responsibility','Consistency','Arranger','Restorative','Deliberative'];
+          const relS=['Empathy','Relator','Harmony','Developer','Includer','Positivity','Connectedness','Individualization','Adaptability','Woo'];
+          const stratS=['Strategic','Futuristic','Ideation','Analytical','Learner','Input','Intellection','Context'];
+          const infS=['Communication','Activator','Command','Self-Assurance','Maximizer','Significance','Competition','Belief'];
+          const aType=execS.includes(a0)?0:relS.includes(a0)?1:stratS.includes(a0)?2:3;
+          const bType=execS.includes(b0)?0:relS.includes(b0)?1:stratS.includes(b0)?2:3;
+          const combo=(aType*4+bType)%5;
+          const templates=[
+            `Where ${nA} leads with <strong>${aStr}</strong>, ${nB} naturally brings <strong>${bStr}</strong> — together they have more range than either would have alone.`,
+            `${nA}\'s <strong>${a0}</strong> and ${nB}\'s <strong>${b0}</strong> pull in different directions in the best way — they\'re stronger for not overlapping here.`,
+            `${nB} brings <strong>${bStr}</strong> that ${nA} doesn\'t lead with, while ${nA}\'s <strong>${aStr}</strong> adds what ${nB} naturally gravitates away from.`,
+            `The strengths that come easily to ${nA} — <strong>${aStr}</strong> — aren\'t ${nB}\'s instinct, and ${nB}\'s <strong>${bStr}</strong> rounds out what ${nA} tends to skip. That\'s the whole point.`,
+            `${nA} leans into <strong>${aStr}</strong>; ${nB} into <strong>${bStr}</strong>. Neither has to stretch — they just have to use each other.`,
+          ];
+          return templates[combo];
+        })()
       : '';
 
     pairingHtml = `<div class="pairing-desc" style="margin-bottom:16px;">
